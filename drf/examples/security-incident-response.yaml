@@ -1,0 +1,183 @@
+drf_version: "0.1.0"
+
+decision:
+  id: "c7a3e1b0-4d2f-4e8a-9b1c-3f5a7e9d2b40"
+  title: "Full Credential Rotation After API Key Compromise"
+  domain: "security"
+  intent: "Determine the appropriate credential rotation scope and strategy after detecting compromised API keys in a third-party logging service, balancing thoroughness against service disruption risk"
+  related_decisions:
+    - id: "c7a3e1b0-4d2f-4e8a-9b1c-3f5a7e9d2b41"
+      relationship: "triggers"
+      description: "Post-incident review will evaluate secrets management architecture"
+
+context:
+  constraints:
+    - description: "Incident response SLA requires containment within 4 hours of detection"
+      source: "regulatory"
+      negotiable: false
+    - description: "PCI DSS compliance requires immediate revocation of any potentially exposed credentials"
+      source: "regulatory"
+      negotiable: false
+    - description: "Production services must maintain at least 99.9% availability during rotation"
+      source: "business"
+      negotiable: true
+    - description: "On-call team limited to 3 engineers available at time of incident (2:00 AM EST)"
+      source: "technical"
+      negotiable: false
+    - description: "Some legacy services do not support zero-downtime credential rotation"
+      source: "technical"
+      negotiable: false
+  objectives:
+    - description: "Eliminate all access paths from the compromised credentials within 4 hours"
+      priority: "must_have"
+      measurable: true
+    - description: "Maintain customer-facing service availability above 99.9% during rotation"
+      priority: "must_have"
+      measurable: true
+    - description: "Produce a complete audit trail of all rotated credentials for compliance"
+      priority: "must_have"
+      measurable: true
+    - description: "Identify and remediate the root cause of the credential exposure"
+      priority: "should_have"
+      measurable: false
+    - description: "Complete rotation without requiring manual intervention on any service"
+      priority: "nice_to_have"
+      measurable: true
+  environment:
+    technical: "42 microservices across 3 AWS accounts. Secrets managed via HashiCorp Vault and AWS Secrets Manager. Third-party integrations with Datadog, Stripe, Twilio, and SendGrid. Approximately 340 active credentials across all services."
+    organizational: "Security team of 5 engineers, 2 SREs on-call. Incident commander escalated to CISO at 2:15 AM. Company has 200 employees, 50 in engineering."
+    temporal: "Incident detected at 1:47 AM EST on 2024-08-12 (Monday). Containment deadline: 5:47 AM EST. Peak US business hours begin at 9:00 AM EST. European customers already active. Board security review scheduled for Thursday."
+
+cognitive_state:
+  phase: "decision"
+  confidence: 70
+  phase_notes: "Blast radius analysis completed but uncertainty remains around lateral movement. Forensic analysis of compromised logging service is ongoing. Time pressure limits ability to fully validate scope before acting."
+
+reasoning:
+  patterns_applied:
+    - risk_based
+    - systematic
+    - deliberative
+    - contrafactual
+  notes: "Risk-based analysis weighed probability of lateral movement against cost of full rotation. Contrafactual reasoning applied: 'If we only rotate targeted credentials and attacker has broader access, exposure window extends by days.' Systematic enumeration of all credential categories and their rotation complexity. Decision favors over-rotation vs under-rotation given regulatory exposure."
+
+interventions:
+  - id: "int-sec-001"
+    type: "challenge"
+    content: "Full rotation of 340 credentials will take 6-8 hours and risk cascading service failures. Can we limit scope to the 23 credentials in the compromised logging namespace?"
+    source: "Senior SRE"
+    timestamp: "2024-08-12T02:30:00Z"
+    impact: "Forced explicit risk quantification of targeted vs full rotation; led to phased approach"
+  - id: "int-sec-002"
+    type: "constraint"
+    content: "PCI DSS Requirement 6.5.3 mandates we treat any credential in the compromised environment as potentially exposed regardless of direct evidence"
+    source: "CISO"
+    timestamp: "2024-08-12T02:45:00Z"
+    impact: "Elevated scope from targeted to full rotation for PCI-scoped credentials; made compliance non-negotiable"
+  - id: "int-sec-003"
+    type: "question"
+    content: "Do we have evidence the attacker moved laterally from the logging service to other systems?"
+    source: "Security Engineer"
+    timestamp: "2024-08-12T03:00:00Z"
+    impact: "Forensic log analysis showed no confirmed lateral movement but 6-hour gap in audit logs from the logging provider created uncertainty"
+  - id: "int-sec-004"
+    type: "insight"
+    content: "Our Vault dynamic secrets for database credentials auto-expire in 1 hour - those 89 credentials are already rotated by design"
+    source: "Platform Engineer"
+    timestamp: "2024-08-12T03:15:00Z"
+    impact: "Reduced effective rotation scope from 340 to 251 credentials; boosted confidence in phased approach"
+  - id: "int-sec-005"
+    type: "external_input"
+    content: "Third-party logging vendor confirmed breach was limited to their log ingestion API layer, not storage. Shared IOCs and timeline."
+    source: "Vendor Incident Response Team"
+    timestamp: "2024-08-12T03:30:00Z"
+    impact: "Reduced uncertainty about blast radius but did not eliminate it; vendor credibility was questioned given their security failure"
+
+assumptions:
+  - description: "Attacker access was limited to the logging service API layer as reported by the vendor"
+    validated: false
+    confidence: 55
+    source: "Vendor incident response communication"
+  - description: "Vault dynamic secrets for database access have already expired and been rotated automatically"
+    validated: true
+    confidence: 95
+    source: "Vault audit log verification"
+  - description: "Automated credential rotation scripts will work correctly for 85% of services"
+    validated: true
+    confidence: 80
+    source: "Previous rotation drill results from Q2 2024"
+  - description: "Legacy services (payment-gateway-v1, report-exporter) will require manual rotation with brief downtime"
+    validated: true
+    confidence: 90
+    source: "Platform team operational knowledge"
+  - description: "No customer data was accessed through the compromised credentials"
+    validated: false
+    confidence: 60
+    source: "Preliminary forensic analysis; full analysis pending"
+
+unresolved_tensions:
+  - description: "Full rotation scope exceeds what forensic evidence strictly justifies, causing unnecessary service risk"
+    impact: "medium"
+    mitigation: "Phased rotation prioritizes PCI-scoped and externally-facing credentials first; internal-only credentials rotated in maintenance window"
+    accepted_by: "CISO"
+  - description: "Vendor's incident report may be incomplete or inaccurate, leaving true blast radius unknown"
+    impact: "high"
+    mitigation: "Proceeding with full rotation regardless of vendor assurances; independent forensic review contracted"
+    accepted_by: "CISO"
+  - description: "Two legacy services require 5-10 minute downtime windows for credential rotation"
+    impact: "medium"
+    mitigation: "Schedule rotation during lowest-traffic window (3:30-4:00 AM EST); activate maintenance pages; notify affected customers proactively"
+    accepted_by: "VP Engineering"
+  - description: "Forensic analysis cannot be completed before containment deadline"
+    impact: "high"
+    mitigation: "Proceed with rotation based on worst-case assumptions; refine understanding post-containment"
+    accepted_by: "CISO"
+
+synthesis:
+  decision: "Execute full credential rotation across all 251 non-dynamic credentials in three phases: Phase 1 (immediate) - rotate all PCI-scoped and externally-facing API keys (47 credentials); Phase 2 (within 4 hours) - rotate all internal service-to-service credentials (156 credentials); Phase 3 (next maintenance window) - rotate legacy service credentials requiring downtime (48 credentials)"
+  rationale: "Full rotation is justified by the combination of PCI DSS regulatory requirements, incomplete forensic evidence, and vendor trust deficit. The phased approach balances urgency with operational safety. Dynamic secrets (89 credentials) are excluded as they self-rotated. The cost of over-rotating (temporary service disruption) is far lower than the cost of under-rotating (extended attacker access, regulatory penalties, customer data exposure)."
+  follow_ups:
+    - action: "Complete Phase 1 PCI and external credential rotation"
+      owner: "Security Engineer On-Call"
+    - action: "Execute Phase 2 internal credential rotation with automated scripts"
+      owner: "SRE On-Call"
+    - action: "Schedule Phase 3 legacy service rotation for Tuesday 3:00 AM maintenance window"
+      owner: "Platform Team Lead"
+    - action: "Complete independent forensic analysis of compromised logging service"
+      owner: "Security Team"
+    - action: "Prepare board security briefing with incident timeline and response summary"
+      owner: "CISO"
+    - action: "Evaluate replacement of third-party logging vendor"
+      owner: "Platform Team"
+    - action: "Conduct post-incident review and update incident response runbooks"
+      owner: "Security Team Lead"
+  alternatives:
+    - decision: "Targeted rotation of only the 23 credentials directly in the compromised logging namespace"
+      rationale_against: "While forensic evidence only confirms exposure of logging-namespace credentials, the 6-hour audit log gap and vendor trust deficit create unacceptable uncertainty. PCI DSS compliance requires treating all potentially-exposed credentials as compromised."
+      conditions_for_reconsideration: "If independent forensic analysis conclusively proves no lateral movement occurred"
+    - decision: "Immediate full rotation of all 340 credentials simultaneously"
+      rationale_against: "Simultaneous rotation of all credentials including Vault dynamic secrets creates unnecessary service disruption risk with no security benefit over the phased approach. Dynamic secrets are already rotated."
+      conditions_for_reconsideration: "If evidence of active ongoing exploitation is discovered during phased rotation"
+
+meta:
+  created_at: "2024-08-12T02:15:00Z"
+  updated_at: "2024-08-12T04:00:00Z"
+  status: "approved"
+  actors:
+    - name: "Priya Sharma"
+      role: "author"
+      email: "priya.sharma@example.com"
+    - name: "David Kim"
+      role: "contributor"
+      email: "david.kim@example.com"
+    - name: "Lisa Nguyen"
+      role: "approver"
+      email: "lisa.nguyen@example.com"
+  source: "incident_response_war_room"
+  tags:
+    - "security"
+    - "incident-response"
+    - "credential-rotation"
+    - "pci-dss"
+    - "critical"
+    - "q3-2024"

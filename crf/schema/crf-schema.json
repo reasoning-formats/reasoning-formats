@@ -1,0 +1,386 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://drf-standard.org/schema/v0.1.0/crf.json",
+  "title": "CRF - Context Reasoning Format",
+  "description": "A graph-based format for representing organizational context that informs and constrains decisions. Companion format to DRF (Decision Reasoning Format).",
+  "type": "object",
+  "required": ["crf_version", "entity"],
+  "additionalProperties": true,
+  "properties": {
+    "crf_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the CRF schema (e.g., '0.1.0')",
+      "examples": ["0.1.0", "1.0.0"]
+    },
+
+    "entity": {
+      "type": "object",
+      "description": "A node in the context knowledge graph",
+      "required": ["id", "type", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier (UUID v4)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["organization", "system", "policy", "fact", "architecture", "capability"],
+          "description": "The type of context entity"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Human-readable name of the entity"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the entity"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Type-specific attributes (see definitions below)",
+          "oneOf": [
+            { "$ref": "#/definitions/organizationAttributes" },
+            { "$ref": "#/definitions/systemAttributes" },
+            { "$ref": "#/definitions/policyAttributes" },
+            { "$ref": "#/definitions/factAttributes" },
+            { "$ref": "#/definitions/architectureAttributes" },
+            { "$ref": "#/definitions/capabilityAttributes" }
+          ]
+        },
+        "validity": {
+          "type": "object",
+          "description": "Optional temporal bounds for when this context is valid",
+          "properties": {
+            "valid_from": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this context becomes valid"
+            },
+            "valid_until": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this context expires"
+            }
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "description": "Edges to other entities in the context graph",
+          "items": {
+            "type": "object",
+            "required": ["target_id", "type"],
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "ID of the related entity"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "owns",
+                  "owned_by",
+                  "depends_on",
+                  "dependency_of",
+                  "constrains",
+                  "constrained_by",
+                  "invalidates",
+                  "invalidated_by",
+                  "part_of",
+                  "contains",
+                  "produces",
+                  "produced_by",
+                  "related_to"
+                ],
+                "description": "Type of relationship"
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional description of the relationship"
+              }
+            }
+          }
+        },
+        "supersedes": {
+          "type": "object",
+          "description": "Reference to entity this one replaces (for evolution tracking)",
+          "properties": {
+            "entity_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID of the superseded entity"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Why this entity supersedes the previous one"
+            },
+            "superseded_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the supersession occurred"
+            }
+          },
+          "required": ["entity_id"]
+        },
+        "provenance": {
+          "type": "object",
+          "description": "Origin and authorship information",
+          "required": ["source", "created_at"],
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "Origin of this context (e.g., 'manual', 'decision:uuid', 'import:system-name')"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this entity was created"
+            },
+            "created_by": {
+              "type": "string",
+              "description": "Who or what created this entity"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this entity was last updated"
+            },
+            "updated_by": {
+              "type": "string",
+              "description": "Who or what last updated this entity"
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Categorization tags for discovery and filtering"
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "organizationAttributes": {
+      "type": "object",
+      "description": "Attributes specific to organization entities",
+      "properties": {
+        "org_type": {
+          "type": "string",
+          "enum": ["company", "division", "department", "team", "squad", "working_group"],
+          "description": "Type of organizational unit"
+        },
+        "size": {
+          "type": "string",
+          "enum": ["startup", "small", "medium", "large", "enterprise"],
+          "description": "Organization size category"
+        },
+        "headcount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of people in this org unit"
+        },
+        "location": {
+          "type": "string",
+          "description": "Geographic location or 'remote'"
+        },
+        "industry": {
+          "type": "string",
+          "description": "Industry vertical"
+        },
+        "compliance_frameworks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Applicable compliance frameworks (SOC2, HIPAA, GDPR, etc.)"
+        }
+      }
+    },
+
+    "systemAttributes": {
+      "type": "object",
+      "description": "Attributes specific to system entities",
+      "properties": {
+        "system_type": {
+          "type": "string",
+          "enum": ["application", "service", "platform", "infrastructure", "database", "integration", "tool"],
+          "description": "Type of system"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "development", "staging", "production", "deprecated", "decommissioned"],
+          "description": "Current lifecycle status"
+        },
+        "criticality": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Business criticality level"
+        },
+        "technology_stack": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Technologies used (languages, frameworks, platforms)"
+        },
+        "hosting": {
+          "type": "string",
+          "description": "Where the system is hosted (AWS, GCP, on-prem, etc.)"
+        },
+        "data_classification": {
+          "type": "string",
+          "enum": ["public", "internal", "confidential", "restricted"],
+          "description": "Data sensitivity classification"
+        }
+      }
+    },
+
+    "policyAttributes": {
+      "type": "object",
+      "description": "Attributes specific to policy entities",
+      "properties": {
+        "policy_type": {
+          "type": "string",
+          "enum": ["governance", "security", "compliance", "architectural", "operational", "financial"],
+          "description": "Category of policy"
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["mandatory", "recommended", "advisory"],
+          "description": "How strictly this policy should be followed (note: DRF validation is always advisory)"
+        },
+        "scope": {
+          "type": "string",
+          "description": "What this policy applies to (e.g., 'all production systems', 'data processing')"
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Why this policy exists"
+        },
+        "exceptions_process": {
+          "type": "string",
+          "description": "How to request exceptions to this policy"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Who owns/maintains this policy"
+        },
+        "review_cycle": {
+          "type": "string",
+          "description": "How often this policy is reviewed (e.g., 'quarterly', 'annually')"
+        }
+      }
+    },
+
+    "factAttributes": {
+      "type": "object",
+      "description": "Attributes specific to fact entities",
+      "properties": {
+        "fact_type": {
+          "type": "string",
+          "enum": ["contract", "budget", "timeline", "constraint", "metric", "event", "status"],
+          "description": "Category of fact"
+        },
+        "value": {
+          "type": ["string", "number", "boolean", "object"],
+          "description": "The factual value or data"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement if applicable"
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Confidence in this fact (0-100)"
+        },
+        "source_reference": {
+          "type": "string",
+          "description": "Reference to authoritative source (document, system, person)"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Whether this fact has been verified"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the fact was last verified"
+        }
+      }
+    },
+
+    "architectureAttributes": {
+      "type": "object",
+      "description": "Attributes specific to architecture entities",
+      "properties": {
+        "architecture_type": {
+          "type": "string",
+          "enum": ["pattern", "principle", "standard", "guideline", "reference", "decision"],
+          "description": "Type of architectural artifact"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Architectural domain (e.g., 'data', 'security', 'integration', 'infrastructure')"
+        },
+        "maturity": {
+          "type": "string",
+          "enum": ["emerging", "established", "mature", "declining", "deprecated"],
+          "description": "Maturity level of this architectural element"
+        },
+        "adoption_status": {
+          "type": "string",
+          "enum": ["proposed", "pilot", "adopted", "standard", "retiring"],
+          "description": "Current adoption status"
+        },
+        "alternatives": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Alternative approaches that were considered"
+        }
+      }
+    },
+
+    "capabilityAttributes": {
+      "type": "object",
+      "description": "Attributes specific to capability entities",
+      "properties": {
+        "capability_type": {
+          "type": "string",
+          "enum": ["skill", "tool", "process", "practice", "certification"],
+          "description": "Type of capability"
+        },
+        "proficiency": {
+          "type": "string",
+          "enum": ["none", "beginner", "intermediate", "advanced", "expert"],
+          "description": "Current proficiency level"
+        },
+        "coverage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of relevant team/org with this capability"
+        },
+        "training_available": {
+          "type": "boolean",
+          "description": "Whether training is available for this capability"
+        },
+        "strategic_importance": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Strategic importance of this capability"
+        }
+      }
+    }
+  },
+
+  "patternProperties": {
+    "^x_": {
+      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_custom_field)"
+    }
+  }
+}

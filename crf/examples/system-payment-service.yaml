@@ -1,0 +1,172 @@
+crf_version: "0.1.0"
+
+entity:
+  id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
+  type: system
+  name: "Payment Processing Service"
+  description: "Core payment processing system handling all customer transactions, subscription billing, and payment method management. Processes approximately $4.2M in monthly transaction volume."
+
+  attributes:
+    system_type: application
+    status: production
+    criticality: critical
+    technology_stack:
+      - "Java 17"
+      - "Spring Boot 3.2"
+      - "PostgreSQL 15 (AWS RDS)"
+      - "Redis (ElastiCache)"
+      - "AWS SQS"
+      - "AWS KMS"
+    hosting: "AWS us-east-1 (primary), us-west-2 (failover)"
+    data_classification: restricted
+    sla:
+      availability: "99.99%"
+      rto_minutes: 15
+      rpo_minutes: 1
+    integrations:
+      - name: "Stripe"
+        type: "payment_processor"
+        criticality: critical
+      - name: "PayPal"
+        type: "payment_processor"
+        criticality: high
+      - name: "Avalara"
+        type: "tax_calculation"
+        criticality: high
+    compliance:
+      - "PCI DSS Level 1"
+      - "SOC 2 Type II"
+    security:
+      encryption_at_rest: true
+      encryption_in_transit: true
+      key_management: "AWS KMS with annual rotation"
+      access_control: "RBAC via IAM + application-level roles"
+      audit_logging: true
+      penetration_test_frequency: "quarterly"
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: owned_by
+      description: "Owned by ACME Corporation"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1e"
+      type: owned_by
+      description: "Managed by Payments Engineering team"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1f"
+      type: constrained_by
+      description: "Subject to PCI DSS compliance policy"
+    - target_id: "33333333-3333-3333-3333-333333333333"
+      type: part_of
+      description: "Deployed within production infrastructure"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-03-15T00:00:00Z"
+    created_by: "payments-team@acme.com"
+    updated_at: "2024-11-01T10:00:00Z"
+    updated_by: "payments-lead@acme.com"
+
+  tags:
+    - "payments"
+    - "critical"
+    - "pci-dss"
+    - "restricted-data"
+
+---
+# Payments Engineering Team
+crf_version: "0.1.0"
+
+entity:
+  id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1e"
+  type: organization
+  name: "Payments Engineering"
+  description: "Team responsible for all payment processing systems, billing infrastructure, and financial integrations"
+
+  attributes:
+    org_type: team
+    headcount: 8
+    location: "Remote (US + EU)"
+    on_call: true
+    on_call_rotation: "weekly"
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: part_of
+      description: "Part of ACME Corporation"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
+      type: owns
+      description: "Owns Payment Processing Service"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-01-01T00:00:00Z"
+    created_by: "admin@acme.com"
+
+  tags:
+    - "team"
+    - "payments"
+    - "engineering"
+
+---
+# PCI DSS Compliance Policy
+crf_version: "0.1.0"
+
+entity:
+  id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1f"
+  type: policy
+  name: "PCI DSS Compliance Policy"
+  description: "Mandatory compliance policy for all systems that process, store, or transmit cardholder data. Requires PCI DSS Level 1 certification and adherence to all 12 PCI DSS requirements."
+
+  attributes:
+    policy_type: compliance
+    enforcement: mandatory
+    scope: "All systems handling cardholder data or connected to the cardholder data environment"
+    rationale: |
+      As a payment processor handling >6 million transactions annually, ACME Corporation
+      is classified as PCI DSS Level 1 and must:
+      1. Maintain a secure network and systems
+      2. Protect cardholder data at rest and in transit
+      3. Maintain a vulnerability management program
+      4. Implement strong access control measures
+      5. Regularly monitor and test networks
+      6. Maintain an information security policy
+
+      Non-compliance risks: fines up to $500,000 per incident, loss of payment processing
+      ability, reputational damage, and personal liability for executives.
+    exceptions_process: |
+      No exceptions permitted for PCI DSS requirements. Compensating controls
+      may be proposed through:
+      1. Written compensating control documentation
+      2. QSA (Qualified Security Assessor) review and approval
+      3. CISO sign-off
+      4. Documentation in annual Report on Compliance (ROC)
+    owner: "CISO"
+    review_cycle: "annual"
+    last_audit: "2024-09-15"
+    next_audit: "2025-09-15"
+    auditor: "Coalfire Systems"
+
+  validity:
+    valid_from: "2023-01-01T00:00:00Z"
+    valid_until: "2025-12-31T23:59:59Z"
+
+  relationships:
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
+      type: constrains
+      description: "Payment Processing Service must comply with PCI DSS"
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: constrains
+      description: "Organization-wide policy for all cardholder data environments"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-01-01T00:00:00Z"
+    created_by: "security@acme.com"
+    updated_at: "2024-09-20T00:00:00Z"
+    updated_by: "ciso@acme.com"
+
+  tags:
+    - "policy"
+    - "pci-dss"
+    - "compliance"
+    - "security"
+    - "mandatory"

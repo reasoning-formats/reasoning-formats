@@ -1,0 +1,204 @@
+drf_version: "0.1.0"
+
+decision:
+  id: "e5f6a7b8-c9d0-4e1f-b2a3-7c8d9e0f1a23"
+  title: "Adopt Grafana Stack for Observability Platform"
+  domain: "architecture"
+  intent: "Select an observability platform that provides unified metrics, logging, and tracing capabilities while respecting budget constraints and a small platform team's operational capacity"
+  related_decisions:
+    - id: "e5f6a7b8-c9d0-4e1f-b2a3-7c8d9e0f1a24"
+      relationship: "depends_on"
+      description: "Cloud provider selection determines available managed observability integrations"
+    - id: "e5f6a7b8-c9d0-4e1f-b2a3-7c8d9e0f1a25"
+      relationship: "related_to"
+      description: "On-call process redesign will leverage the chosen observability platform for alerting"
+
+context:
+  constraints:
+    - description: "Total observability spend must not exceed $8,000/month including infrastructure and licensing"
+      source: "budget"
+      negotiable: true
+    - description: "Platform team of 2 engineers cannot dedicate more than 20% of capacity to observability operations"
+      source: "technical"
+      negotiable: false
+    - description: "Must retain at least 30 days of logs and 13 months of metrics for compliance"
+      source: "regulatory"
+      negotiable: false
+    - description: "Must support OpenTelemetry for instrumentation to avoid vendor lock-in"
+      source: "technical"
+      negotiable: false
+    - description: "Solution must be operational within 6 weeks to support upcoming product launch"
+      source: "business"
+      negotiable: true
+  objectives:
+    - description: "Unified view of metrics, logs, and traces correlated by request ID"
+      priority: "must_have"
+      measurable: true
+    - description: "Alert-to-dashboard workflow under 30 seconds for on-call engineers"
+      priority: "must_have"
+      measurable: true
+    - description: "Support custom business metrics alongside infrastructure metrics"
+      priority: "must_have"
+      measurable: true
+    - description: "Self-service dashboard creation for application teams without platform team involvement"
+      priority: "should_have"
+      measurable: true
+    - description: "Anomaly detection and intelligent alerting to reduce alert fatigue"
+      priority: "should_have"
+      measurable: false
+    - description: "Cost attribution per team or service for observability spend"
+      priority: "nice_to_have"
+      measurable: true
+    - description: "AI-assisted root cause analysis during incidents"
+      priority: "nice_to_have"
+      measurable: false
+  environment:
+    technical: "28 microservices on AWS EKS. Languages: Go (60%), Python (30%), Node.js (10%). Current monitoring: fragmented mix of CloudWatch, ad-hoc Prometheus, and scattered ELK stack. Approximately 500GB/day log volume, 2M active time series."
+    organizational: "Engineering org of 35 developers across 5 teams. Platform team of 2 engineers. No dedicated SRE function. On-call rotated among senior developers. Series A startup, recently raised $12M."
+    temporal: "Major product launch in 8 weeks. Current monitoring gaps caused 2 extended outages in past quarter due to slow detection. Board expects operational maturity improvement."
+
+cognitive_state:
+  phase: "decision"
+  confidence: 75
+  phase_notes: "Completed 2-week evaluation of all three options including Datadog trial, Grafana Cloud trial, and architecture spike for custom build. Cost projections validated. Remaining uncertainty around Grafana operational burden with 2-person team."
+
+reasoning:
+  patterns_applied:
+    - comparative
+    - cost_benefit
+    - risk_based
+    - deliberative
+  notes: "Three-way comparison across 8 dimensions: cost, operational burden, feature completeness, time to value, vendor lock-in risk, scalability, team learning curve, and ecosystem fit. Cost-benefit analysis projected over 24 months. Risk assessment focused on operational burden vs budget trade-off. Build option eliminated early due to team size constraint."
+
+interventions:
+  - id: "int-obs-001"
+    type: "question"
+    content: "At our log volume (500GB/day), what is the realistic monthly cost for Datadog vs Grafana Cloud vs self-hosted Grafana?"
+    source: "CFO"
+    timestamp: "2024-10-05T10:00:00Z"
+    impact: "Triggered detailed cost modeling; Datadog estimated at $22,000/month (2.8x budget), Grafana Cloud at $6,500/month, self-hosted Grafana at $3,200/month infrastructure"
+  - id: "int-obs-002"
+    type: "challenge"
+    content: "Self-hosted Grafana stack means we become our own observability vendor. With 2 platform engineers, who observes the observers?"
+    source: "VP Engineering"
+    timestamp: "2024-10-08T14:00:00Z"
+    impact: "Shifted preference from self-hosted to Grafana Cloud despite higher cost; operational risk of self-hosting deemed too high for team size"
+  - id: "int-obs-003"
+    type: "insight"
+    content: "Datadog's per-host and per-GB pricing creates unpredictable costs as we scale. Our log volume doubled in 6 months. At projected growth, Datadog reaches $45,000/month in 12 months."
+    source: "Platform Engineer"
+    timestamp: "2024-10-10T11:30:00Z"
+    impact: "Eliminated Datadog from serious consideration; cost trajectory incompatible with startup budget"
+  - id: "int-obs-004"
+    type: "external_input"
+    content: "Grafana Labs announced Adaptive Metrics and Adaptive Logs features that automatically reduce cardinality and volume, potentially cutting costs 30-40%"
+    source: "Grafana Labs sales engineering call"
+    timestamp: "2024-10-12T15:00:00Z"
+    impact: "Increased confidence in Grafana Cloud cost predictability; validated that vendor is investing in cost optimization"
+  - id: "int-obs-005"
+    type: "challenge"
+    content: "Several developers have Datadog experience from previous companies and prefer its UX. Grafana has a steeper learning curve for non-infrastructure engineers."
+    source: "Application Team Lead"
+    timestamp: "2024-10-14T09:00:00Z"
+    impact: "Acknowledged as valid concern; allocated budget for Grafana training and committed to creating team-specific starter dashboards"
+  - id: "int-obs-006"
+    type: "question"
+    content: "Can we start with Grafana Cloud and migrate to self-hosted later if we grow the platform team?"
+    source: "CTO"
+    timestamp: "2024-10-15T16:00:00Z"
+    impact: "Confirmed Grafana Cloud to self-hosted migration path exists; reduced lock-in concern and framed decision as reversible"
+
+assumptions:
+  - description: "Log volume growth will average 8-10% monthly over the next 12 months"
+    validated: false
+    confidence: 60
+    source: "6-month historical trend analysis"
+  - description: "Grafana Cloud Adaptive Logs will reduce effective log storage costs by 25-35%"
+    validated: false
+    confidence: 50
+    source: "Grafana Labs sales engineering estimate"
+  - description: "Application teams can create basic dashboards independently after 2 hours of training"
+    validated: true
+    confidence: 75
+    source: "Grafana Cloud trial with 3 volunteer developers"
+  - description: "OpenTelemetry instrumentation will take 2-3 days per service to implement"
+    validated: true
+    confidence: 80
+    source: "Completed instrumentation of 2 services during evaluation"
+  - description: "Migration from self-hosted Grafana Cloud is feasible if needed in the future"
+    validated: false
+    confidence: 70
+    source: "Grafana documentation and community reports"
+
+unresolved_tensions:
+  - description: "Grafana Cloud UX is less polished than Datadog for non-infrastructure users, creating adoption friction"
+    impact: "medium"
+    mitigation: "Invest in pre-built dashboard templates per team; schedule hands-on training sessions; designate observability champions per team"
+    accepted_by: "VP Engineering"
+  - description: "Grafana Cloud pricing still has usage-based components that could surprise at scale"
+    impact: "medium"
+    mitigation: "Implement usage monitoring and alerting on Grafana Cloud spend; negotiate committed-use discount with Grafana Labs; set hard ingestion limits per environment"
+    accepted_by: "CFO"
+  - description: "Dependency on Grafana Labs as a vendor for a critical operational capability"
+    impact: "low"
+    mitigation: "OpenTelemetry instrumentation ensures data portability; Grafana OSS provides exit path; dashboards exportable as JSON"
+    accepted_by: "CTO"
+  - description: "6-week timeline is aggressive for full observability rollout across 28 services"
+    impact: "high"
+    mitigation: "Phase rollout: Week 1-2 core infrastructure + 5 critical services; Week 3-4 remaining services; Week 5-6 alerting and dashboards. Accept partial coverage at launch."
+    accepted_by: "VP Engineering"
+
+synthesis:
+  decision: "Adopt Grafana Cloud as the unified observability platform, using Grafana for dashboards, Mimir for metrics, Loki for logs, and Tempo for traces. Instrument all services with OpenTelemetry. Start with Grafana Cloud managed tier and evaluate migration to self-hosted if platform team grows."
+  rationale: "Grafana Cloud provides the best balance of cost ($6,500/month within budget), operational burden (fully managed, suitable for 2-person team), and feature completeness (unified metrics/logs/traces). While Datadog offers superior UX, its cost trajectory ($22K-$45K/month) is incompatible with startup budget constraints. Building custom was eliminated due to team size. OpenTelemetry instrumentation preserves vendor portability. The Grafana Cloud to self-hosted migration path makes this decision reversible if economics shift at scale."
+  follow_ups:
+    - action: "Sign Grafana Cloud annual contract with committed-use discount"
+      owner: "VP Engineering"
+    - action: "Implement OpenTelemetry instrumentation for 5 critical services (Phase 1)"
+      owner: "Platform Team"
+    - action: "Create per-team starter dashboard templates"
+      owner: "Platform Engineer"
+    - action: "Configure alerting rules and on-call integration with PagerDuty"
+      owner: "Platform Team Lead"
+    - action: "Schedule Grafana training sessions for application teams"
+      owner: "Platform Engineer"
+    - action: "Set up Grafana Cloud usage monitoring and budget alerts"
+      owner: "Platform Team"
+    - action: "Decommission legacy CloudWatch dashboards and ELK stack after migration"
+      owner: "Platform Team"
+  alternatives:
+    - decision: "Adopt Datadog as unified observability platform"
+      rationale_against: "Datadog's per-host and per-GB pricing model results in $22,000/month at current scale (2.8x budget) and projects to $45,000/month within 12 months. While Datadog offers the best UX and most comprehensive feature set, the cost is incompatible with our budget constraints and growth trajectory."
+      conditions_for_reconsideration: "If funding round provides significantly larger infrastructure budget (>$30K/month for observability), or if Datadog introduces a startup-friendly pricing tier"
+    - decision: "Build custom observability platform using self-hosted Prometheus, Loki, and Jaeger"
+      rationale_against: "A 2-person platform team cannot sustain the operational burden of managing a production observability stack. Self-hosted infrastructure estimated at $3,200/month (cheapest option) but requires 40-50% of platform team capacity for operations, leaving insufficient time for other platform work."
+      conditions_for_reconsideration: "If platform team grows to 4+ engineers and team has experience operating these systems in production"
+    - decision: "Extend current CloudWatch-based monitoring with additional AWS-native tools"
+      rationale_against: "CloudWatch lacks unified metrics/logs/traces correlation, has poor dashboard UX, and creates deep AWS vendor lock-in. Does not address the root cause of recent outages (slow detection due to fragmented monitoring)."
+      conditions_for_reconsideration: "Not recommended under any foreseeable conditions"
+
+meta:
+  created_at: "2024-10-01T09:00:00Z"
+  updated_at: "2024-10-18T17:00:00Z"
+  status: "approved"
+  actors:
+    - name: "Rajesh Patel"
+      role: "author"
+      email: "rajesh.patel@example.com"
+    - name: "Emma Lindqvist"
+      role: "contributor"
+      email: "emma.lindqvist@example.com"
+    - name: "Tomoko Hayashi"
+      role: "reviewer"
+      email: "tomoko.hayashi@example.com"
+    - name: "Michael Chen"
+      role: "approver"
+      email: "michael.chen@example.com"
+  source: "architecture_review_meeting"
+  tags:
+    - "observability"
+    - "monitoring"
+    - "grafana"
+    - "build-vs-buy"
+    - "infrastructure"
+    - "q4-2024"

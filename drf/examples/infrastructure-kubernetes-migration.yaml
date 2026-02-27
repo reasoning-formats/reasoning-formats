@@ -1,0 +1,235 @@
+drf_version: "0.1.0"
+
+decision:
+  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  title: "Migrate Production Workloads from EC2 to Amazon EKS"
+  domain: "infrastructure"
+  intent: "Modernize our deployment infrastructure to improve scalability, reduce operational overhead, and enable faster release cycles while maintaining production stability"
+  related_decisions:
+    - id: "550e8400-e29b-41d4-a716-446655440000"
+      relationship: "depends_on"
+      description: "Database decision determines stateful workload requirements for Kubernetes"
+    - id: "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+      relationship: "related_to"
+      description: "CI/CD pipeline modernization will leverage this infrastructure change"
+
+context:
+  constraints:
+    - description: "Zero-downtime migration required; no customer-facing outages permitted"
+      source: "business"
+      negotiable: false
+    - description: "Must maintain SOC 2 Type II and HIPAA compliance throughout migration"
+      source: "regulatory"
+      negotiable: false
+    - description: "Migration must complete within Q2 2024 to align with vendor contract renewal"
+      source: "budget"
+      negotiable: true
+    - description: "Current team has limited Kubernetes production experience"
+      source: "technical"
+      negotiable: false
+    - description: "Cannot exceed $15,000/month infrastructure spend during migration (dual-running costs)"
+      source: "budget"
+      negotiable: true
+  objectives:
+    - description: "Reduce deployment time from 45 minutes to under 10 minutes"
+      priority: "must_have"
+      measurable: true
+    - description: "Enable horizontal auto-scaling based on request load"
+      priority: "must_have"
+      measurable: true
+    - description: "Achieve 99.95% uptime SLA (improvement from current 99.9%)"
+      priority: "should_have"
+      measurable: true
+    - description: "Reduce infrastructure operational burden by 50%"
+      priority: "should_have"
+      measurable: true
+    - description: "Enable canary deployments and progressive rollouts"
+      priority: "nice_to_have"
+      measurable: false
+  environment:
+    technical: "15 microservices running on EC2 Auto Scaling Groups behind ALB. Mix of Node.js, Python, and Go services. PostgreSQL RDS and ElastiCache Redis for persistence. Current deployment via Ansible and custom scripts."
+    organizational: "Platform team of 4 engineers, 3 application teams (total 20 developers). DevOps maturity level: intermediate. On-call rotation shared between platform and senior app developers."
+    temporal: "AWS Enterprise Support contract renewal in June 2024. Black Friday traffic planning begins August 2024. Two key engineers departing in Q3 2024."
+
+cognitive_state:
+  phase: "decision"
+  confidence: 78
+  phase_notes: "Completed 6-week proof of concept with 2 non-critical services. Production readiness assessment passed. Remaining uncertainty around stateful workload migration and team ramp-up time."
+
+reasoning:
+  patterns_applied:
+    - risk_based
+    - comparative
+    - cost_benefit
+    - systematic
+    - deliberative
+  notes: "Primary driver was risk analysis given compliance requirements and zero-downtime constraint. Systematic evaluation of EKS vs ECS vs continued EC2 optimization. Cost-benefit analysis included TCO over 3 years factoring in engineering time, training, and operational efficiency gains."
+
+interventions:
+  - id: "int-infra-001"
+    type: "question"
+    content: "How will we handle persistent volumes for stateful services during migration?"
+    source: "Senior Platform Engineer"
+    timestamp: "2024-02-05T11:00:00Z"
+    impact: "Led to adoption of EBS CSI driver and explicit stateful workload migration strategy as Phase 3"
+  - id: "int-infra-002"
+    type: "challenge"
+    content: "EKS control plane costs plus node overhead may exceed current EC2 spend by 30%"
+    source: "Finance Partner"
+    timestamp: "2024-02-08T14:30:00Z"
+    impact: "Triggered detailed TCO analysis; identified long-term savings through bin-packing efficiency and reduced on-call burden"
+  - id: "int-infra-003"
+    type: "constraint"
+    content: "HIPAA BAA requires dedicated tenancy for PHI workloads"
+    source: "Security Team"
+    timestamp: "2024-02-12T09:15:00Z"
+    impact: "Mandated dedicated node groups for PHI-handling services; added $2,400/month to baseline costs"
+  - id: "int-infra-004"
+    type: "external_input"
+    content: "AWS announced EKS Pod Identity as GA, simplifying IAM integration"
+    source: "AWS re:Invent 2023 announcement"
+    timestamp: "2024-02-15T10:00:00Z"
+    impact: "Simplified IAM design; eliminated need for kiam/kube2iam; reduced security attack surface"
+  - id: "int-infra-005"
+    type: "insight"
+    content: "POC revealed that 60% of current EC2 capacity is unused outside peak hours"
+    source: "Platform Team POC Analysis"
+    timestamp: "2024-02-20T16:00:00Z"
+    impact: "Strengthened business case for Kubernetes; HPA + Karpenter can reduce waste significantly"
+  - id: "int-infra-006"
+    type: "question"
+    content: "What happens to our investment if AWS deprecates EKS or changes pricing dramatically?"
+    source: "CTO"
+    timestamp: "2024-02-22T11:30:00Z"
+    impact: "Adopted GitOps approach with Argo CD and avoided AWS-specific CRDs where possible to maintain portability"
+  - id: "int-infra-007"
+    type: "challenge"
+    content: "Two senior engineers leaving in Q3 - can we complete migration and knowledge transfer in time?"
+    source: "Engineering Manager"
+    timestamp: "2024-02-26T13:00:00Z"
+    impact: "Accelerated documentation requirements; added explicit knowledge transfer milestones; contracted Kubernetes consulting firm for 3 months"
+
+assumptions:
+  - description: "EKS managed node groups will handle OS patching and node lifecycle automatically"
+    validated: true
+    confidence: 95
+    source: "AWS documentation and POC validation"
+  - description: "Karpenter can provision appropriate node types within 60 seconds of demand spike"
+    validated: true
+    confidence: 85
+    source: "Load testing during POC (p95 provision time: 47 seconds)"
+  - description: "Application teams can adopt Helm charts and Kubernetes manifests within 2 sprints"
+    validated: false
+    confidence: 55
+    source: "Engineering manager estimate based on team learning patterns"
+  - description: "Network policies can replicate current security group isolation"
+    validated: true
+    confidence: 90
+    source: "Security team validation of Calico CNI capabilities"
+  - description: "Existing monitoring stack (Datadog) fully supports EKS without significant reconfiguration"
+    validated: true
+    confidence: 92
+    source: "Datadog documentation and support confirmation"
+  - description: "Database connection pooling will function correctly through Kubernetes service mesh"
+    validated: false
+    confidence: 65
+    source: "Initial testing showed intermittent issues; requires further investigation"
+  - description: "Current CI/CD pipelines can be adapted rather than rebuilt from scratch"
+    validated: false
+    confidence: 70
+    source: "Initial assessment of GitHub Actions workflows"
+
+unresolved_tensions:
+  - description: "Kubernetes complexity may increase mean-time-to-resolution for production incidents initially"
+    impact: "high"
+    mitigation: "Establish runbook library before migration; contract with external Kubernetes support for first 6 months; mandatory incident simulation exercises"
+    accepted_by: "VP of Engineering"
+  - description: "Team skill gap creates key-person dependency on 2 platform engineers during transition"
+    impact: "high"
+    mitigation: "Pair programming rotation; external consulting support; accelerated hiring for Kubernetes-experienced SRE"
+    accepted_by: "Engineering Manager"
+  - description: "Dual-running infrastructure costs will exceed budget by ~$8,000/month for 3 months"
+    impact: "medium"
+    mitigation: "Finance approved temporary budget increase; costs recover within 6 months post-migration through efficiency gains"
+    accepted_by: "CFO"
+  - description: "Helm chart versioning may create drift between environments if not carefully managed"
+    impact: "medium"
+    mitigation: "Implement Argo CD ApplicationSets with environment-specific value overlays; automated drift detection"
+    accepted_by: "Platform Team Lead"
+  - description: "Some legacy services require significant refactoring for container compatibility"
+    impact: "low"
+    mitigation: "Identified 2 services for parallel rewrite; others containerize without changes"
+    accepted_by: "Application Team Leads"
+
+synthesis:
+  decision: "Migrate all production workloads from EC2 Auto Scaling Groups to Amazon EKS using managed node groups, Karpenter for autoscaling, and Argo CD for GitOps deployment management"
+  rationale: "EKS provides the best balance of operational efficiency, scalability, and ecosystem maturity for our requirements. The managed control plane reduces operational burden while maintaining compliance capabilities. Karpenter addresses our cost optimization goals through intelligent bin-packing. The 6-week POC demonstrated feasibility and identified manageable risks. While ECS was considered for its simplicity, the broader Kubernetes ecosystem, portability benefits, and team career growth opportunities tipped the decision toward EKS."
+  follow_ups:
+    - action: "Finalize EKS cluster architecture document and security baseline"
+      owner: "Platform Team Lead"
+    - action: "Complete Terraform modules for EKS, VPC CNI, and Karpenter"
+      owner: "Senior Platform Engineer"
+    - action: "Develop migration runbook for each service tier (stateless → stateful)"
+      owner: "Platform Team"
+    - action: "Schedule Kubernetes training sessions with external vendor"
+      owner: "Engineering Manager"
+    - action: "Establish SLA monitoring dashboards in Datadog for EKS metrics"
+      owner: "Platform Engineer"
+    - action: "Create incident response runbooks for common Kubernetes failure modes"
+      owner: "Platform Team + On-Call Rotation"
+    - action: "Negotiate 3-month consulting engagement with Kubernetes specialists"
+      owner: "VP of Engineering"
+    - action: "Update disaster recovery documentation for EKS-based architecture"
+      owner: "Security Team + Platform Team"
+  alternatives:
+    - decision: "Migrate to Amazon ECS with Fargate for serverless container management"
+      rationale_against: "While ECS offers simpler operations and tighter AWS integration, the lack of Kubernetes ecosystem compatibility limits future flexibility. Fargate pricing at our scale exceeds EKS with Karpenter optimization. Team expressed preference for Kubernetes skills development for career growth."
+      conditions_for_reconsideration: "If Kubernetes operational complexity proves unmanageable after 12 months, or if AWS significantly improves ECS ecosystem and pricing"
+    - decision: "Optimize current EC2 infrastructure with improved automation and right-sizing"
+      rationale_against: "Addresses cost concerns but does not solve deployment velocity, auto-scaling granularity, or operational burden objectives. Technical debt in current Ansible scripts would require significant investment regardless."
+      conditions_for_reconsideration: "If migration timeline slips beyond Q3 2024 and quick wins needed for Black Friday preparation"
+    - decision: "Adopt managed Kubernetes on GCP (GKE) for superior Kubernetes experience"
+      rationale_against: "GKE offers better Kubernetes UX but requires multi-cloud data transfer costs, RDS migration complexity, and loss of existing AWS Enterprise Support relationship. Migration scope would double."
+      conditions_for_reconsideration: "If AWS EKS pricing or capabilities fall significantly behind GKE within next 2 years"
+
+meta:
+  created_at: "2024-02-01T09:00:00Z"
+  updated_at: "2024-03-01T17:45:00Z"
+  status: "approved"
+  actors:
+    - name: "Jordan Martinez"
+      role: "author"
+      email: "jordan.martinez@example.com"
+    - name: "Sam Okonkwo"
+      role: "contributor"
+      email: "sam.okonkwo@example.com"
+    - name: "Alex Chen"
+      role: "reviewer"
+      email: "alex.chen@example.com"
+    - name: "Taylor Williams"
+      role: "reviewer"
+      email: "taylor.williams@example.com"
+    - name: "Morgan Foster"
+      role: "approver"
+      email: "morgan.foster@example.com"
+  source: "architecture_review_board"
+  tags:
+    - "infrastructure"
+    - "kubernetes"
+    - "aws"
+    - "migration"
+    - "eks"
+    - "q2-2024"
+    - "high-impact"
+
+# Extension example: Organization-specific audit tracking
+x_acme_compliance:
+  risk_assessment_id: "RA-2024-0042"
+  security_review_status: "approved"
+  change_advisory_board_ticket: "CAB-2024-156"
+  hipaa_impact_assessment: "completed"
+
+x_acme_project:
+  jira_epic: "PLAT-1234"
+  confluence_page: "https://wiki.example.com/display/PLAT/EKS+Migration"
+  slack_channel: "#platform-eks-migration"

@@ -1,0 +1,132 @@
+drf_version: "0.1.0"
+
+decision:
+  id: "550e8400-e29b-41d4-a716-446655440000"
+  title: "Adopt PostgreSQL as Primary Database"
+  domain: "architecture"
+  intent: "Select a database system that supports our scalability requirements while maintaining data integrity and developer productivity"
+  related_decisions:
+    - id: "660e8400-e29b-41d4-a716-446655440001"
+      relationship: "depends_on"
+      description: "Cloud provider selection constrains available managed database options"
+
+context:
+  constraints:
+    - description: "Must support ACID transactions"
+      source: "regulatory"
+      negotiable: false
+    - description: "Budget limited to $5000/month for database infrastructure"
+      source: "budget"
+      negotiable: true
+    - description: "Team has limited NoSQL experience"
+      source: "technical"
+      negotiable: false
+  objectives:
+    - description: "Handle 10,000 concurrent connections"
+      priority: "must_have"
+      measurable: true
+    - description: "Sub-100ms query response time for 95th percentile"
+      priority: "must_have"
+      measurable: true
+    - description: "Support for JSON document storage"
+      priority: "should_have"
+      measurable: false
+  environment:
+    technical: "Kubernetes-based microservices architecture on AWS"
+    organizational: "Series A startup with 15-person engineering team"
+    temporal: "Decision needed within 2 weeks for Q2 roadmap planning"
+
+cognitive_state:
+  phase: "decision"
+  confidence: 85
+  phase_notes: "Completed POC with PostgreSQL and MySQL; clear winner emerged"
+
+reasoning:
+  patterns_applied:
+    - comparative
+    - risk_based
+    - cost_benefit
+    - deliberative
+  notes: "Systematic comparison of PostgreSQL, MySQL, and MongoDB against requirements. Risk analysis focused on operational complexity and team expertise."
+
+interventions:
+  - id: "int-001"
+    type: "question"
+    content: "Have we considered the long-term licensing implications?"
+    source: "CTO"
+    timestamp: "2024-01-15T10:30:00Z"
+    impact: "Eliminated MongoDB from consideration due to SSPL concerns"
+  - id: "int-002"
+    type: "challenge"
+    content: "PostgreSQL's connection pooling may not meet our concurrency needs"
+    source: "Senior Backend Engineer"
+    timestamp: "2024-01-16T14:00:00Z"
+    impact: "Added PgBouncer to architecture; validated in POC"
+  - id: "int-003"
+    type: "external_input"
+    content: "AWS RDS PostgreSQL now supports up to 16TB storage"
+    source: "AWS documentation"
+    timestamp: "2024-01-17T09:00:00Z"
+    impact: "Confirmed cloud-managed option viable for our scale"
+
+assumptions:
+  - description: "Read/write ratio will remain approximately 80/20"
+    validated: true
+    confidence: 75
+    source: "Current application analytics"
+  - description: "Team can ramp up on PostgreSQL-specific features within 1 month"
+    validated: false
+    confidence: 60
+    source: "Engineering manager estimate"
+  - description: "JSON workloads will not exceed 30% of total queries"
+    validated: false
+    confidence: 50
+    source: "Product roadmap analysis"
+
+unresolved_tensions:
+  - description: "PostgreSQL's VACUUM process may cause latency spikes during peak hours"
+    impact: "medium"
+    mitigation: "Schedule VACUUM during off-peak hours; monitor and tune as needed"
+    accepted_by: "Engineering Lead"
+  - description: "Limited team experience with PostgreSQL-specific extensions"
+    impact: "low"
+    mitigation: "Allocate training budget and pair programming sessions"
+    accepted_by: "CTO"
+
+synthesis:
+  decision: "Adopt PostgreSQL 15 on AWS RDS as the primary database, with PgBouncer for connection pooling"
+  rationale: "PostgreSQL provides the best balance of ACID compliance, scalability, and total cost of ownership. Its JSON support addresses future flexibility needs, while AWS RDS reduces operational burden. The open-source licensing eliminates vendor lock-in concerns raised during review."
+  follow_ups:
+    - action: "Finalize RDS instance sizing and create Terraform modules"
+      owner: "Platform Team"
+    - action: "Establish database coding standards and review checklist"
+      owner: "Backend Lead"
+    - action: "Schedule PostgreSQL training sessions for the team"
+      owner: "Engineering Manager"
+  alternatives:
+    - decision: "Use MySQL 8.0 on AWS RDS"
+      rationale_against: "While MySQL is familiar to the team, its JSON support and advanced indexing capabilities lag behind PostgreSQL for our use cases"
+      conditions_for_reconsideration: "If PostgreSQL operational complexity becomes unmanageable within first 6 months"
+    - decision: "Use MongoDB Atlas"
+      rationale_against: "SSPL licensing concerns and lack of ACID transaction support across collections made this unsuitable for our regulatory requirements"
+      conditions_for_reconsideration: "If product direction shifts heavily toward document-centric workloads (>70%)"
+
+meta:
+  created_at: "2024-01-15T09:00:00Z"
+  updated_at: "2024-01-20T16:30:00Z"
+  status: "approved"
+  actors:
+    - name: "Alice Chen"
+      role: "author"
+      email: "alice@example.com"
+    - name: "Bob Smith"
+      role: "reviewer"
+      email: "bob@example.com"
+    - name: "Carol Johnson"
+      role: "approver"
+      email: "carol@example.com"
+  source: "architecture_review_meeting"
+  tags:
+    - "database"
+    - "infrastructure"
+    - "q2-2024"

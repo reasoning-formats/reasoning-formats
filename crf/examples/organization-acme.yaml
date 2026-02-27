@@ -1,0 +1,197 @@
+crf_version: "0.1.0"
+
+entity:
+  id: "11111111-1111-1111-1111-111111111111"
+  type: organization
+  name: "ACME Corporation"
+  description: "Series B SaaS company providing workflow automation for mid-market enterprises"
+
+  attributes:
+    org_type: company
+    size: medium
+    headcount: 150
+    location: "San Francisco, CA (HQ) + Remote"
+    industry: "Enterprise Software / SaaS"
+    compliance_frameworks:
+      - "SOC 2 Type II"
+      - "HIPAA"
+      - "GDPR"
+
+  relationships:
+    - target_id: "22222222-2222-2222-2222-222222222222"
+      type: contains
+      description: "Platform Engineering team"
+    - target_id: "33333333-3333-3333-3333-333333333333"
+      type: owns
+      description: "Primary production infrastructure"
+    - target_id: "44444444-4444-4444-4444-444444444444"
+      type: constrained_by
+      description: "Company-wide security policies"
+
+  provenance:
+    source: "manual"
+    created_at: "2024-01-01T00:00:00Z"
+    created_by: "admin@acme.com"
+
+  tags:
+    - "organization"
+    - "root"
+
+---
+# Platform Engineering Team
+crf_version: "0.1.0"
+
+entity:
+  id: "22222222-2222-2222-2222-222222222222"
+  type: organization
+  name: "Platform Engineering"
+  description: "Team responsible for infrastructure, developer experience, and platform reliability"
+
+  attributes:
+    org_type: team
+    headcount: 6
+    location: "Remote"
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: part_of
+      description: "Part of ACME Corporation"
+    - target_id: "33333333-3333-3333-3333-333333333333"
+      type: owns
+      description: "Owns production infrastructure"
+    - target_id: "55555555-5555-5555-5555-555555555555"
+      type: owns
+      description: "Kubernetes capability"
+
+  provenance:
+    source: "manual"
+    created_at: "2024-01-01T00:00:00Z"
+    created_by: "admin@acme.com"
+
+  tags:
+    - "team"
+    - "platform"
+    - "engineering"
+
+---
+# Production Infrastructure System
+crf_version: "0.1.0"
+
+entity:
+  id: "33333333-3333-3333-3333-333333333333"
+  type: system
+  name: "Production Infrastructure"
+  description: "AWS-based production infrastructure hosting all customer-facing workloads"
+
+  attributes:
+    system_type: infrastructure
+    status: production
+    criticality: critical
+    technology_stack:
+      - "AWS"
+      - "EC2"
+      - "RDS PostgreSQL"
+      - "ElastiCache Redis"
+      - "ALB"
+      - "CloudFront"
+    hosting: "AWS us-east-1"
+    data_classification: confidential
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: owned_by
+      description: "Owned by ACME Corporation"
+    - target_id: "22222222-2222-2222-2222-222222222222"
+      type: owned_by
+      description: "Managed by Platform Engineering"
+    - target_id: "66666666-6666-6666-6666-666666666666"
+      type: constrained_by
+      description: "AWS contract constraints"
+
+  provenance:
+    source: "manual"
+    created_at: "2024-01-01T00:00:00Z"
+    created_by: "platform@acme.com"
+    updated_at: "2024-02-15T10:00:00Z"
+    updated_by: "platform@acme.com"
+
+  tags:
+    - "infrastructure"
+    - "production"
+    - "aws"
+
+---
+# Kubernetes Capability
+crf_version: "0.1.0"
+
+entity:
+  id: "55555555-5555-5555-5555-555555555555"
+  type: capability
+  name: "Kubernetes Operations"
+  description: "Team capability for operating Kubernetes clusters in production"
+
+  attributes:
+    capability_type: skill
+    proficiency: intermediate
+    coverage: 33  # 2 of 6 team members
+    training_available: true
+    strategic_importance: high
+
+  relationships:
+    - target_id: "22222222-2222-2222-2222-222222222222"
+      type: owned_by
+      description: "Capability of Platform Engineering team"
+
+  provenance:
+    source: "manual"
+    created_at: "2024-01-15T00:00:00Z"
+    created_by: "platform-lead@acme.com"
+
+  tags:
+    - "capability"
+    - "kubernetes"
+    - "skill"
+
+---
+# AWS Contract Fact
+crf_version: "0.1.0"
+
+entity:
+  id: "66666666-6666-6666-6666-666666666666"
+  type: fact
+  name: "AWS Enterprise Contract"
+  description: "3-year enterprise agreement with AWS including support and committed spend"
+
+  attributes:
+    fact_type: contract
+    value:
+      vendor: "Amazon Web Services"
+      contract_type: "Enterprise Agreement"
+      committed_spend: 500000
+      currency: "USD"
+      term_years: 3
+      support_level: "Enterprise"
+    unit: "USD/year"
+    confidence: 100
+    source_reference: "Contract #AWS-2023-ACME-001"
+    verified: true
+    verified_at: "2024-01-01T00:00:00Z"
+
+  validity:
+    valid_from: "2023-06-01T00:00:00Z"
+    valid_until: "2026-05-31T23:59:59Z"
+
+  relationships:
+    - target_id: "33333333-3333-3333-3333-333333333333"
+      type: constrains
+      description: "Contract applies to production infrastructure"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-06-01T00:00:00Z"
+    created_by: "finance@acme.com"
+
+  tags:
+    - "contract"
+    - "aws"
+    - "finance"

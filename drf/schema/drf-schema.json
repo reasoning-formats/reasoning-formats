@@ -1,0 +1,481 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://drf-standard.org/schema/v0.1.0/drf.json",
+  "title": "DRF - Decision Reasoning Format",
+  "description": "A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning",
+  "type": "object",
+  "required": ["drf_version", "decision", "context", "cognitive_state", "synthesis", "meta"],
+  "additionalProperties": true,
+  "properties": {
+    "drf_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the DRF schema (e.g., '0.1.0')",
+      "examples": ["0.1.0", "1.0.0"]
+    },
+
+    "decision": {
+      "type": "object",
+      "description": "Core identity and intent of the decision",
+      "required": ["id", "title", "intent"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier (UUID v4)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Human-readable title of the decision"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Domain or category of the decision (e.g., 'architecture', 'security', 'infrastructure')"
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Clear statement of what is being decided and why it matters"
+        },
+        "related_decisions": {
+          "type": "array",
+          "description": "References to related decisions (non-hierarchical links)",
+          "items": {
+            "type": "object",
+            "required": ["id", "relationship"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "relationship": {
+                "type": "string",
+                "enum": ["supersedes", "superseded_by", "depends_on", "dependency_of", "related_to", "conflicts_with"],
+                "description": "Type of relationship to the referenced decision"
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional description of the relationship"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "context": {
+      "type": "object",
+      "description": "Environmental and situational context for the decision",
+      "required": ["constraints", "objectives"],
+      "properties": {
+        "constraints": {
+          "type": "array",
+          "description": "Hard constraints that must be satisfied",
+          "items": {
+            "type": "object",
+            "required": ["description"],
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "description": "Origin of the constraint (e.g., 'regulatory', 'budget', 'technical')"
+              },
+              "negotiable": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "objectives": {
+          "type": "array",
+          "description": "Goals and success criteria",
+          "items": {
+            "type": "object",
+            "required": ["description"],
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["must_have", "should_have", "nice_to_have"]
+              },
+              "measurable": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "Relevant environmental factors",
+          "properties": {
+            "technical": {
+              "type": "string",
+              "description": "Technical environment description"
+            },
+            "organizational": {
+              "type": "string",
+              "description": "Organizational context"
+            },
+            "temporal": {
+              "type": "string",
+              "description": "Time-related factors (deadlines, urgency)"
+            }
+          }
+        }
+      }
+    },
+
+    "cognitive_state": {
+      "type": "object",
+      "description": "Current phase and confidence of the decision process",
+      "required": ["phase", "confidence"],
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": ["exploration", "analysis", "synthesis", "decision"],
+          "description": "Current cognitive phase (linear progression)"
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Confidence level as percentage (0-100)"
+        },
+        "phase_notes": {
+          "type": "string",
+          "description": "Optional notes about the current phase"
+        }
+      }
+    },
+
+    "reasoning": {
+      "type": "object",
+      "description": "Explicit reasoning patterns applied during the decision",
+      "properties": {
+        "patterns_applied": {
+          "type": "array",
+          "description": "Ordered list of reasoning patterns (first = primary)",
+          "items": {
+            "type": "string",
+            "enum": [
+              "operational",
+              "risk_based",
+              "contrafactual",
+              "comparative",
+              "cost_benefit",
+              "intuitive",
+              "deliberative",
+              "heuristic",
+              "systematic",
+              "creative",
+              "consensus",
+              "authority",
+              "delegation",
+              "voting",
+              "escalation"
+            ]
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional reasoning notes or methodology description"
+        }
+      }
+    },
+
+    "interventions": {
+      "type": "array",
+      "description": "Key questions, challenges, or inputs that shaped the reasoning",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "content"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this intervention"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["question", "challenge", "constraint", "insight", "external_input"],
+            "description": "Category of intervention"
+          },
+          "content": {
+            "type": "string",
+            "description": "The intervention content"
+          },
+          "source": {
+            "type": "string",
+            "description": "Who or what raised this intervention"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How this intervention affected the decision"
+          }
+        }
+      }
+    },
+
+    "assumptions": {
+      "type": "array",
+      "description": "Explicit or implicit premises accepted during the decision",
+      "items": {
+        "type": "object",
+        "required": ["description", "validated"],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "validated": {
+            "type": "boolean",
+            "description": "Whether this assumption has been validated"
+          },
+          "confidence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Confidence in this assumption (0-100)"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source or basis for this assumption"
+          }
+        }
+      }
+    },
+
+    "unresolved_tensions": {
+      "type": "array",
+      "description": "Known trade-offs or risks left open or accepted",
+      "items": {
+        "type": "object",
+        "required": ["description", "impact"],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Severity of impact if tension materializes"
+          },
+          "mitigation": {
+            "type": "string",
+            "description": "Planned mitigation strategy, if any"
+          },
+          "accepted_by": {
+            "type": "string",
+            "description": "Who accepted this tension"
+          }
+        }
+      }
+    },
+
+    "synthesis": {
+      "type": "object",
+      "description": "The consolidated decision outcome",
+      "required": ["decision", "rationale"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "description": "The primary decision statement"
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Explanation of why this decision was made"
+        },
+        "follow_ups": {
+          "type": "array",
+          "description": "Next steps or actions required",
+          "items": {
+            "type": "object",
+            "required": ["action"],
+            "properties": {
+              "action": {
+                "type": "string"
+              },
+              "owner": {
+                "type": "string"
+              },
+              "due_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "alternatives": {
+          "type": "array",
+          "description": "Ranked alternative outcomes (first = highest ranked alternative)",
+          "items": {
+            "type": "object",
+            "required": ["decision", "rationale_against"],
+            "properties": {
+              "decision": {
+                "type": "string",
+                "description": "Alternative decision statement"
+              },
+              "rationale_against": {
+                "type": "string",
+                "description": "Why this alternative was not chosen"
+              },
+              "conditions_for_reconsideration": {
+                "type": "string",
+                "description": "Under what conditions this alternative should be reconsidered"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "context_validation": {
+      "type": "object",
+      "description": "Links this decision to CRF (Context Reasoning Format) entities for validation. All validation is advisory - conflicts are surfaced but do not block decisions.",
+      "properties": {
+        "validated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When context validation was performed"
+        },
+        "context_refs": {
+          "type": "array",
+          "description": "References to CRF entities this decision was validated against",
+          "items": {
+            "type": "object",
+            "required": ["context_id", "context_type", "validation_status"],
+            "properties": {
+              "context_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "UUID of the CRF entity"
+              },
+              "context_type": {
+                "type": "string",
+                "enum": ["organization", "system", "policy", "fact", "architecture", "capability"],
+                "description": "Type of the referenced CRF entity"
+              },
+              "context_name": {
+                "type": "string",
+                "description": "Human-readable name of the referenced context (for documentation)"
+              },
+              "validation_status": {
+                "type": "string",
+                "enum": ["satisfied", "violated", "acknowledged", "not_applicable"],
+                "description": "Result of validating this decision against the context"
+              },
+              "advisory_notes": {
+                "type": "string",
+                "description": "Explanation of the validation result or justification for acknowledged violations"
+              }
+            }
+          }
+        },
+        "context_outputs": {
+          "type": "array",
+          "description": "CRF entities this decision creates, updates, or invalidates",
+          "items": {
+            "type": "object",
+            "required": ["action", "entity_type"],
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": ["creates", "updates", "invalidates"],
+                "description": "What action this decision takes on context"
+              },
+              "entity_type": {
+                "type": "string",
+                "enum": ["organization", "system", "policy", "fact", "architecture", "capability"],
+                "description": "Type of CRF entity being affected"
+              },
+              "entity_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "ID of existing entity (required for updates/invalidates)"
+              },
+              "entity_data": {
+                "type": "object",
+                "description": "Data for the new/updated entity (see CRF schema)"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Why this decision affects the context"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "meta": {
+      "type": "object",
+      "description": "Metadata about the decision document",
+      "required": ["created_at", "status"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this decision document was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this document was last updated"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "approved", "rejected", "superseded", "archived"],
+          "description": "Lifecycle status of the decision"
+        },
+        "actors": {
+          "type": "array",
+          "description": "People or systems involved in the decision",
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["author", "reviewer", "approver", "contributor", "stakeholder"]
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "source": {
+          "type": "string",
+          "description": "Origin of this decision (e.g., 'meeting', 'AI-assisted', 'document')"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Categorization tags"
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^x_": {
+      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_audit)"
+    }
+  }
+}

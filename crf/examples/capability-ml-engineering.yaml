@@ -1,0 +1,169 @@
+crf_version: "0.1.0"
+
+entity:
+  id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
+  type: capability
+  name: "ML/AI Engineering"
+  description: "Organizational capability for designing, training, deploying, and operating machine learning models in production. Currently in early stages with significant gap between current state and strategic target."
+
+  attributes:
+    capability_type: skill
+    proficiency: beginner
+    coverage: 15  # 3 of 20 engineers have basic ML experience
+    training_available: true
+    strategic_importance: high
+    current_state:
+      description: "Limited to rule-based heuristics and basic scikit-learn models run as batch jobs. No MLOps pipeline. Models deployed manually via SSH. No model monitoring or drift detection."
+      maturity_level: "ad_hoc"
+      tools_in_use:
+        - "scikit-learn"
+        - "Jupyter notebooks"
+        - "pandas"
+      models_in_production: 2
+      inference_type: "batch_only"
+    desired_state:
+      description: "Production-grade ML platform supporting real-time inference, automated retraining pipelines, model versioning, A/B testing, and monitoring. Team capable of deploying transformer-based models for NLP use cases."
+      maturity_level: "managed"
+      target_date: "2025-12-31"
+      tools_planned:
+        - "PyTorch"
+        - "MLflow"
+        - "Kubeflow or SageMaker"
+        - "Feature Store (Feast or Tecton)"
+        - "Model monitoring (Evidently AI)"
+      target_models_in_production: 8
+      target_inference_type: "real_time"
+    gap_analysis:
+      skill_gaps:
+        - area: "Deep learning / neural networks"
+          current: "none"
+          required: "intermediate"
+          headcount_needed: 2
+        - area: "MLOps / ML infrastructure"
+          current: "none"
+          required: "advanced"
+          headcount_needed: 1
+        - area: "NLP / transformer models"
+          current: "none"
+          required: "intermediate"
+          headcount_needed: 1
+      infrastructure_gaps:
+        - "No GPU compute available (needed for training)"
+        - "No model registry or versioning system"
+        - "No feature store for consistent feature engineering"
+        - "No real-time inference serving infrastructure"
+      process_gaps:
+        - "No model review or approval process"
+        - "No model monitoring or drift detection"
+        - "No A/B testing framework for models"
+    investment_required:
+      hiring: "2 ML engineers, 1 MLOps engineer (estimated $650K/year total compensation)"
+      infrastructure: "$4,000-8,000/month for GPU instances and ML platform tooling"
+      training: "$30,000 for existing team upskilling (courses, conferences, workshops)"
+      timeline_months: 18
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: owned_by
+      description: "Capability of ACME Corporation"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
+      type: owned_by
+      description: "Primary ownership: Data Engineering team"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d30"
+      type: depends_on
+      description: "ML capability depends on data platform maturity"
+
+  provenance:
+    source: "manual"
+    created_at: "2024-11-01T00:00:00Z"
+    created_by: "cto@acme.com"
+    updated_at: "2024-12-15T00:00:00Z"
+    updated_by: "data-lead@acme.com"
+
+  tags:
+    - "capability"
+    - "ml"
+    - "ai"
+    - "strategic"
+    - "gap-analysis"
+
+---
+# Data Engineering Team
+crf_version: "0.1.0"
+
+entity:
+  id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
+  type: organization
+  name: "Data Engineering"
+  description: "Team responsible for data pipelines, data warehouse, analytics infrastructure, and emerging ML capabilities"
+
+  attributes:
+    org_type: team
+    headcount: 5
+    location: "Remote (US)"
+
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: part_of
+      description: "Part of ACME Corporation"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
+      type: owns
+      description: "Owns ML/AI Engineering capability"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d30"
+      type: owns
+      description: "Owns data platform"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-06-01T00:00:00Z"
+    created_by: "admin@acme.com"
+
+  tags:
+    - "team"
+    - "data"
+    - "engineering"
+
+---
+# Data Platform System (dependency)
+crf_version: "0.1.0"
+
+entity:
+  id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d30"
+  type: system
+  name: "Data Platform"
+  description: "Centralized data platform providing data ingestion, transformation, warehousing, and analytics capabilities"
+
+  attributes:
+    system_type: platform
+    status: production
+    criticality: high
+    technology_stack:
+      - "AWS S3 (data lake)"
+      - "Snowflake (data warehouse)"
+      - "Apache Airflow (orchestration)"
+      - "dbt (transformations)"
+      - "Fivetran (ingestion)"
+    hosting: "AWS us-east-1"
+    data_classification: confidential
+    maturity: intermediate
+
+  relationships:
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
+      type: owned_by
+      description: "Managed by Data Engineering team"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
+      type: dependency_of
+      description: "ML capability depends on data platform for feature data and training datasets"
+
+  provenance:
+    source: "manual"
+    created_at: "2023-06-01T00:00:00Z"
+    created_by: "data-lead@acme.com"
+    updated_at: "2024-10-01T00:00:00Z"
+    updated_by: "data-lead@acme.com"
+
+  tags:
+    - "data"
+    - "platform"
+    - "analytics"
+    - "production"

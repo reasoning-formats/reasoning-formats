@@ -1,0 +1,189 @@
+drf_version: "0.1.0"
+
+decision:
+  id: "d4e5f6a7-b8c9-4d0e-a1f2-6b3c7d8e9f01"
+  title: "Adopt URL Path-Based API Versioning Strategy"
+  domain: "architecture"
+  intent: "Establish a consistent API versioning strategy across all public and partner-facing APIs that balances developer experience, maintainability, and backward compatibility"
+  related_decisions:
+    - id: "d4e5f6a7-b8c9-4d0e-a1f2-6b3c7d8e9f02"
+      relationship: "related_to"
+      description: "API gateway selection will implement the chosen versioning scheme"
+    - id: "d4e5f6a7-b8c9-4d0e-a1f2-6b3c7d8e9f03"
+      relationship: "related_to"
+      description: "API deprecation policy defines lifecycle for retired versions"
+
+context:
+  constraints:
+    - description: "Must support at least 2 concurrent API versions in production"
+      source: "business"
+      negotiable: false
+    - description: "Existing v1 API consumers (230+ partners) cannot be broken without 12-month deprecation notice"
+      source: "contractual"
+      negotiable: false
+    - description: "API gateway (Kong) must natively support the versioning mechanism"
+      source: "technical"
+      negotiable: true
+    - description: "Versioning strategy must work with OpenAPI 3.1 specification generation"
+      source: "technical"
+      negotiable: false
+    - description: "Engineering team bandwidth limited; cannot maintain more than 3 concurrent versions"
+      source: "technical"
+      negotiable: true
+  objectives:
+    - description: "API consumers can discover and migrate between versions without support tickets"
+      priority: "must_have"
+      measurable: true
+    - description: "Version routing adds less than 5ms latency at the gateway layer"
+      priority: "must_have"
+      measurable: true
+    - description: "New API versions can be released independently per service"
+      priority: "should_have"
+      measurable: true
+    - description: "API version is visible in access logs and monitoring dashboards without custom parsing"
+      priority: "should_have"
+      measurable: true
+    - description: "Support content negotiation for clients that prefer header-based versioning"
+      priority: "nice_to_have"
+      measurable: false
+  environment:
+    technical: "12 public REST APIs served through Kong API Gateway. OpenAPI 3.1 specs auto-generated from code annotations. Backend services in Go and Python. Current API has no formal versioning; breaking changes have been avoided through additive-only policy."
+    organizational: "API platform team of 3 engineers. 230+ external partners consuming the API. Developer relations team of 2 managing partner communications. Monthly API review board."
+    temporal: "Major v2 API redesign planned for Q1 2025. Partner developer conference in March 2025 where new API version will be announced. Current additive-only approach becoming untenable as product evolves."
+
+cognitive_state:
+  phase: "decision"
+  confidence: 82
+  phase_notes: "Extensive comparative analysis completed. Partner survey results collected. POC with URL path versioning validated in staging. Remaining uncertainty around long-term maintenance burden of multiple concurrent versions."
+
+reasoning:
+  patterns_applied:
+    - comparative
+    - deliberative
+    - risk_based
+    - cost_benefit
+  notes: "Systematic comparison of three versioning approaches (URL path, Accept header, query parameter) against six criteria: developer experience, cacheability, discoverability, tooling support, operational complexity, and industry alignment. Weighted scoring model developed with input from partner survey. Risk analysis focused on migration complexity and partner adoption friction."
+
+interventions:
+  - id: "int-api-001"
+    type: "external_input"
+    content: "Partner survey (n=84): 71% prefer URL path versioning, 18% prefer header versioning, 11% no preference. Top concern: clear migration documentation."
+    source: "Developer Relations Team"
+    timestamp: "2024-09-15T10:00:00Z"
+    impact: "Strongly weighted decision toward URL path approach; confirmed developer experience priority"
+  - id: "int-api-002"
+    type: "challenge"
+    content: "URL path versioning violates REST purist principles - the resource identity should not change between versions. Header-based versioning is more semantically correct."
+    source: "Senior API Architect"
+    timestamp: "2024-09-18T14:30:00Z"
+    impact: "Acknowledged as valid concern but pragmatism and partner preference outweighed theoretical correctness; documented as trade-off"
+  - id: "int-api-003"
+    type: "question"
+    content: "How will we handle shared data models that evolve across versions? Will v1 and v2 share the same database?"
+    source: "Backend Team Lead"
+    timestamp: "2024-09-20T11:00:00Z"
+    impact: "Led to adoption of adapter pattern: single backend with version-specific serialization layers rather than separate codebases per version"
+  - id: "int-api-004"
+    type: "external_input"
+    content: "Analysis of top 50 public APIs: 72% use URL path versioning (Stripe, GitHub, Google), 20% use header versioning (Azure), 8% use query parameters"
+    source: "API Platform Team research"
+    timestamp: "2024-09-22T09:00:00Z"
+    impact: "Reinforced URL path approach as industry standard; reduced risk perception of the choice"
+  - id: "int-api-005"
+    type: "constraint"
+    content: "Our CDN caching layer cannot vary cache keys by custom headers without significant configuration changes and cost increase"
+    source: "Infrastructure Engineer"
+    timestamp: "2024-09-25T15:00:00Z"
+    impact: "Eliminated header-based versioning as primary strategy due to caching complexity; URL path versioning caches naturally"
+  - id: "int-api-006"
+    type: "insight"
+    content: "We can support both URL path and Accept header versioning at the gateway level, with URL path as primary and header as fallback for partners who strongly prefer it"
+    source: "API Platform Engineer"
+    timestamp: "2024-09-28T10:30:00Z"
+    impact: "Resolved tension between pragmatism and flexibility; adopted as hybrid approach for the nice_to_have objective"
+
+assumptions:
+  - description: "Partner migration from unversioned to v1 endpoints can be automated via gateway rewrite rules"
+    validated: true
+    confidence: 90
+    source: "Kong configuration POC in staging environment"
+  - description: "Maintaining 2-3 concurrent API versions is sustainable with adapter pattern and shared backend"
+    validated: false
+    confidence: 70
+    source: "Architecture team estimate; no precedent internally"
+  - description: "Partners will migrate to v2 within 12 months of announcement given proper documentation and incentives"
+    validated: false
+    confidence: 55
+    source: "Developer relations estimate based on industry benchmarks"
+  - description: "OpenAPI spec generation tools can produce separate specs per URL-versioned API without custom tooling"
+    validated: true
+    confidence: 85
+    source: "Tested with swaggo (Go) and drf-spectacular (Python)"
+
+unresolved_tensions:
+  - description: "URL path versioning semantically implies a different resource, which may confuse API consumers performing resource-based caching"
+    impact: "low"
+    mitigation: "Document clearly that /v1/users/123 and /v2/users/123 represent the same underlying resource with different representations; include canonical URL headers"
+    accepted_by: "API Architect"
+  - description: "Maintaining multiple concurrent versions increases testing surface area proportionally"
+    impact: "medium"
+    mitigation: "Invest in contract testing (Pact) between versions; shared integration test suite with version parameterization"
+    accepted_by: "QA Lead"
+  - description: "Version-specific serialization adapters add code complexity and potential for subtle bugs"
+    impact: "medium"
+    mitigation: "Strict code review process for adapter changes; comprehensive property-based testing for serialization correctness"
+    accepted_by: "Backend Team Lead"
+
+synthesis:
+  decision: "Adopt URL path-based versioning as the primary API versioning strategy (e.g., /v1/resources, /v2/resources), with optional Accept header versioning as a secondary mechanism for partners who request it. Implement version-specific serialization adapters over a shared backend rather than separate codebases per version."
+  rationale: "URL path versioning best satisfies our primary criteria: developer experience (71% partner preference), cacheability (native CDN support), discoverability (version visible in URL), and industry alignment (72% of top APIs). The adapter pattern keeps maintenance burden manageable. While header-based versioning is more semantically pure, the pragmatic benefits of URL path versioning and overwhelming partner preference justify this choice. The optional header support accommodates the 18% of partners who prefer it without adding significant complexity."
+  follow_ups:
+    - action: "Implement URL path versioning routing rules in Kong API Gateway"
+      owner: "API Platform Team"
+    - action: "Create version adapter framework with Go and Python reference implementations"
+      owner: "Backend Team Lead"
+    - action: "Migrate existing unversioned endpoints to /v1/ prefix via gateway rewrite rules"
+      owner: "API Platform Engineer"
+    - action: "Update OpenAPI spec generation to produce per-version specifications"
+      owner: "API Platform Team"
+    - action: "Draft API versioning guide and migration documentation for partners"
+      owner: "Developer Relations Team"
+    - action: "Establish API deprecation policy with 12-month sunset window"
+      owner: "API Review Board"
+    - action: "Set up per-version monitoring dashboards and alerting in Datadog"
+      owner: "API Platform Engineer"
+  alternatives:
+    - decision: "Use Accept header versioning (content negotiation) as the primary mechanism"
+      rationale_against: "While more RESTful in theory, header-based versioning is less discoverable, breaks CDN caching without expensive configuration, and was preferred by only 18% of surveyed partners. Debugging is harder as version is not visible in URLs or standard access logs."
+      conditions_for_reconsideration: "If CDN adds native support for header-based cache variation at no additional cost, and partner preference shifts toward header versioning"
+    - decision: "Use query parameter versioning (e.g., /resources?version=2)"
+      rationale_against: "Conflates versioning with query semantics, is easily lost in URL construction, and was not preferred by any surveyed partners. Poor caching behavior as query parameters are often stripped or ignored by intermediaries."
+      conditions_for_reconsideration: "Not recommended under any foreseeable conditions"
+    - decision: "Continue additive-only approach without formal versioning"
+      rationale_against: "Becoming untenable as product evolution requires breaking changes. Additive-only leads to bloated, inconsistent APIs over time. The v2 redesign cannot be delivered under this constraint."
+      conditions_for_reconsideration: "If product roadmap stabilizes and no breaking changes are needed for 2+ years"
+
+meta:
+  created_at: "2024-09-10T09:00:00Z"
+  updated_at: "2024-10-01T16:00:00Z"
+  status: "approved"
+  actors:
+    - name: "Marcus Thompson"
+      role: "author"
+      email: "marcus.thompson@example.com"
+    - name: "Yuki Tanaka"
+      role: "contributor"
+      email: "yuki.tanaka@example.com"
+    - name: "Sarah Mitchell"
+      role: "reviewer"
+      email: "sarah.mitchell@example.com"
+    - name: "James Okafor"
+      role: "approver"
+      email: "james.okafor@example.com"
+  source: "api_review_board"
+  tags:
+    - "api"
+    - "versioning"
+    - "architecture"
+    - "developer-experience"
+    - "q4-2024"
