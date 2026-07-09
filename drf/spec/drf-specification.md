@@ -1,6 +1,6 @@
 # DRF — Decision Reasoning Format
 
-**Draft Specification v0.1**
+**Draft Specification v0.2**
 
 ---
 
@@ -190,7 +190,7 @@ DRF is expected to evolve through:
 
 ## Status
 
-This document represents **DRF Draft v0.1**.
+This document represents **DRF Draft v0.2**.
 
 The goal of this phase is to stabilize the core concepts and structure before formal versioning.
 

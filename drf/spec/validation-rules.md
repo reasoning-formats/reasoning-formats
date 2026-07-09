@@ -1,6 +1,6 @@
 # DRF Validation Rules
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Draft
 
 This document defines the semantic validation rules for DRF documents beyond JSON Schema structural validation.
@@ -139,6 +139,8 @@ RATIONALE: Interventions without documented impact may indicate incomplete reaso
 | `superseded_by` | This decision was replaced by the referenced one | `supersedes` |
 | `depends_on` | This decision requires the referenced one | `dependency_of` |
 | `dependency_of` | Referenced decision depends on this one | `depends_on` |
+| `triggers` | This decision causes or necessitates the referenced one | `triggered_by` |
+| `triggered_by` | This decision was caused or necessitated by the referenced one | `triggers` |
 | `related_to` | General association (symmetric) | `related_to` |
 | `conflicts_with` | Decisions are in tension (symmetric) | `conflicts_with` |
 
@@ -229,6 +231,12 @@ WHEN: field name starts with "x_"
 THEN: field is treated as extension (permissive validation)
 FORMAT: x_{namespace}_{field_name}
 EXAMPLES: x_mycompany_audit_id, x_security_classification
+
+RULE: unknown_field_rejected
+WHEN: an unrecognized field does not start with "x_"
+THEN: the field is rejected at the document root (DRF) and at the
+      document root, entity, and attributes levels (CRF)
+ERROR: "Additional properties are not allowed ('{field}' was unexpected)"
 ```
 
 ### Extension Isolation
@@ -374,8 +382,11 @@ Rules for validating CRF (Context Reasoning Format) documents.
 ```
 RULE: attributes_match_type
 WHEN: entity.type is specified
-THEN: entity.attributes SHOULD only contain fields valid for that type
-WARNING: "Attribute '{field}' not defined for entity type '{type}'"
+THEN: entity.attributes MUST only contain fields defined for that type,
+      or extension fields prefixed with "x_"
+ERROR: "Attribute '{field}' not defined for entity type '{type}'"
+NOTE: Enforced structurally by the CRF schema (conditional attribute
+      definitions selected by entity.type)
 ```
 
 ### Relationship Consistency

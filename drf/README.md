@@ -1,6 +1,6 @@
 # DRF - Decision Reasoning Format
 
-**Version:** 0.1.0 (Draft)
+**Version:** 0.2.0 (Draft)
 
 A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning.
 
@@ -30,7 +30,7 @@ DRF is a structured format for documenting **decisions** along with their **reas
 ## Quick Example
 
 ```yaml
-drf_version: "0.1.0"
+drf_version: "0.2.0"
 
 decision:
   id: "550e8400-e29b-41d4-a716-446655440000"
@@ -191,7 +191,10 @@ See [integration examples](../integration) for details.
 ## Examples
 
 - [`database-selection.yaml`](./examples/database-selection.yaml) - Simple database decision
+- [`api-versioning-strategy.yaml`](./examples/api-versioning-strategy.yaml) - API versioning strategy decision
+- [`build-vs-buy-observability.yaml`](./examples/build-vs-buy-observability.yaml) - Build-vs-buy evaluation
 - [`infrastructure-kubernetes-migration.yaml`](./examples/infrastructure-kubernetes-migration.yaml) - Complex infrastructure decision
+- [`security-incident-response.yaml`](./examples/security-incident-response.yaml) - Time-critical security decision
 
 ---
 

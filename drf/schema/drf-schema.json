@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://drf-standard.org/schema/v0.1.0/drf.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.2.0/drf/schema/drf-schema.json",
   "title": "DRF - Decision Reasoning Format",
   "description": "A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning",
   "type": "object",
   "required": ["drf_version", "decision", "context", "cognitive_state", "synthesis", "meta"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "drf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the DRF schema (e.g., '0.1.0')",
-      "examples": ["0.1.0", "1.0.0"]
+      "description": "Semantic version of the DRF schema (e.g., '0.2.0')",
+      "examples": ["0.2.0", "1.0.0"]
     },
 
     "decision": {
@@ -52,7 +52,7 @@
               },
               "relationship": {
                 "type": "string",
-                "enum": ["supersedes", "superseded_by", "depends_on", "dependency_of", "related_to", "conflicts_with"],
+                "enum": ["supersedes", "superseded_by", "depends_on", "dependency_of", "triggers", "triggered_by", "related_to", "conflicts_with"],
                 "description": "Type of relationship to the referenced decision"
               },
               "description": {

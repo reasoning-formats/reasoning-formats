@@ -1,6 +1,6 @@
 # CRF - Context Reasoning Format
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Draft
 **Companion to:** DRF (Decision Reasoning Format)
 
@@ -47,6 +47,36 @@ Context evolves through replacement, not versioning:
 - New entities can `supersede` old ones
 - Full history maintained through supersession chains
 - No explicit version numbers
+
+---
+
+## Document Conventions
+
+### One Entity per Document
+
+A CRF document contains exactly one `entity`. This keeps each document independently validatable and addressable.
+
+### Multiple Entities per File
+
+Related entities MAY be stored in a single file as a **multi-document YAML stream**, with documents separated by `---`:
+
+```yaml
+crf_version: "0.2.0"
+entity:
+  id: "11111111-1111-1111-1111-111111111111"
+  # ...
+---
+crf_version: "0.2.0"
+entity:
+  id: "22222222-2222-2222-2222-222222222222"
+  # ...
+```
+
+Each document in the stream MUST validate independently against the CRF schema, including its own `crf_version` field. Validators MUST process every document in a stream, not just the first. The repository's [`scripts/validate-examples.py`](../../scripts/validate-examples.py) implements this behavior.
+
+### Extension Fields
+
+Fields not defined by this specification MUST use the `x_` prefix (e.g., `x_mycompany_sla`). This applies at the document root, within `entity`, and within `attributes`. Unprefixed unknown fields are rejected by the schema.
 
 ---
 
@@ -232,7 +262,7 @@ supersedes:
 
 ## Provenance
 
-Every entity tracks its origin:
+Every entity tracks its origin. The `provenance` field is **required** on every entity, and within it `source` and `created_at` are mandatory:
 
 ```yaml
 provenance:

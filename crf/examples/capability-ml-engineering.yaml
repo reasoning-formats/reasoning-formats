@@ -1,4 +1,4 @@
-crf_version: "0.1.0"
+crf_version: "0.2.0"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
@@ -12,7 +12,7 @@ entity:
     coverage: 15  # 3 of 20 engineers have basic ML experience
     training_available: true
     strategic_importance: high
-    current_state:
+    x_current_state:
       description: "Limited to rule-based heuristics and basic scikit-learn models run as batch jobs. No MLOps pipeline. Models deployed manually via SSH. No model monitoring or drift detection."
       maturity_level: "ad_hoc"
       tools_in_use:
@@ -21,7 +21,7 @@ entity:
         - "pandas"
       models_in_production: 2
       inference_type: "batch_only"
-    desired_state:
+    x_desired_state:
       description: "Production-grade ML platform supporting real-time inference, automated retraining pipelines, model versioning, A/B testing, and monitoring. Team capable of deploying transformer-based models for NLP use cases."
       maturity_level: "managed"
       target_date: "2025-12-31"
@@ -33,7 +33,7 @@ entity:
         - "Model monitoring (Evidently AI)"
       target_models_in_production: 8
       target_inference_type: "real_time"
-    gap_analysis:
+    x_gap_analysis:
       skill_gaps:
         - area: "Deep learning / neural networks"
           current: "none"
@@ -56,7 +56,7 @@ entity:
         - "No model review or approval process"
         - "No model monitoring or drift detection"
         - "No A/B testing framework for models"
-    investment_required:
+    x_investment_required:
       hiring: "2 ML engineers, 1 MLOps engineer (estimated $650K/year total compensation)"
       infrastructure: "$4,000-8,000/month for GPU instances and ML platform tooling"
       training: "$30,000 for existing team upskilling (courses, conferences, workshops)"
@@ -89,7 +89,7 @@ entity:
 
 ---
 # Data Engineering Team
-crf_version: "0.1.0"
+crf_version: "0.2.0"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
@@ -125,7 +125,7 @@ entity:
 
 ---
 # Data Platform System (dependency)
-crf_version: "0.1.0"
+crf_version: "0.2.0"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d30"
@@ -145,7 +145,7 @@ entity:
       - "Fivetran (ingestion)"
     hosting: "AWS us-east-1"
     data_classification: confidential
-    maturity: intermediate
+    x_maturity: intermediate
 
   relationships:
     - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"

@@ -1,23 +1,34 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://drf-standard.org/schema/v0.1.0/crf.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.2.0/crf/schema/crf-schema.json",
   "title": "CRF - Context Reasoning Format",
-  "description": "A graph-based format for representing organizational context that informs and constrains decisions. Companion format to DRF (Decision Reasoning Format).",
+  "description": "A graph-based format for representing organizational context that informs and constrains decisions. Companion format to DRF (Decision Reasoning Format). A CRF document contains a single entity; multiple entities may be stored in one file as a multi-document YAML stream, where each document validates independently against this schema.",
   "type": "object",
   "required": ["crf_version", "entity"],
-  "additionalProperties": true,
+  "additionalProperties": false,
+  "patternProperties": {
+    "^x_": {
+      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_custom_field)"
+    }
+  },
   "properties": {
     "crf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the CRF schema (e.g., '0.1.0')",
-      "examples": ["0.1.0", "1.0.0"]
+      "description": "Semantic version of the CRF schema (e.g., '0.2.0')",
+      "examples": ["0.2.0", "1.0.0"]
     },
 
     "entity": {
       "type": "object",
       "description": "A node in the context knowledge graph",
-      "required": ["id", "type", "name"],
+      "required": ["id", "type", "name", "provenance"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_custom_field)"
+        }
+      },
       "properties": {
         "id": {
           "type": "string",
@@ -41,15 +52,7 @@
         },
         "attributes": {
           "type": "object",
-          "description": "Type-specific attributes (see definitions below)",
-          "oneOf": [
-            { "$ref": "#/definitions/organizationAttributes" },
-            { "$ref": "#/definitions/systemAttributes" },
-            { "$ref": "#/definitions/policyAttributes" },
-            { "$ref": "#/definitions/factAttributes" },
-            { "$ref": "#/definitions/architectureAttributes" },
-            { "$ref": "#/definitions/capabilityAttributes" }
-          ]
+          "description": "Type-specific attributes; the applicable definition is selected by entity.type (see allOf conditions below)"
         },
         "validity": {
           "type": "object",
@@ -162,7 +165,63 @@
           },
           "description": "Categorization tags for discovery and filtering"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "organization" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/organizationAttributes" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "system" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/systemAttributes" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "policy" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/policyAttributes" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "fact" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/factAttributes" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "architecture" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/architectureAttributes" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "capability" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": { "attributes": { "$ref": "#/definitions/capabilityAttributes" } }
+          }
+        }
+      ]
     }
   },
 
@@ -170,6 +229,12 @@
     "organizationAttributes": {
       "type": "object",
       "description": "Attributes specific to organization entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "org_type": {
           "type": "string",
@@ -205,6 +270,12 @@
     "systemAttributes": {
       "type": "object",
       "description": "Attributes specific to system entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "system_type": {
           "type": "string",
@@ -241,6 +312,12 @@
     "policyAttributes": {
       "type": "object",
       "description": "Attributes specific to policy entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "policy_type": {
           "type": "string",
@@ -278,6 +355,12 @@
     "factAttributes": {
       "type": "object",
       "description": "Attributes specific to fact entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "fact_type": {
           "type": "string",
@@ -317,6 +400,12 @@
     "architectureAttributes": {
       "type": "object",
       "description": "Attributes specific to architecture entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "architecture_type": {
           "type": "string",
@@ -348,6 +437,12 @@
     "capabilityAttributes": {
       "type": "object",
       "description": "Attributes specific to capability entities",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x_": {
+          "description": "Extension fields must be prefixed with 'x_'"
+        }
+      },
       "properties": {
         "capability_type": {
           "type": "string",
@@ -375,12 +470,6 @@
           "description": "Strategic importance of this capability"
         }
       }
-    }
-  },
-
-  "patternProperties": {
-    "^x_": {
-      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_custom_field)"
     }
   }
 }

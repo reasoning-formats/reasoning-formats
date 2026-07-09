@@ -1,6 +1,6 @@
 # CRF - Context Reasoning Format
 
-**Version:** 0.1.0 (Draft)
+**Version:** 0.2.0 (Draft)
 
 A graph-based format for representing organizational context that informs and constrains decisions. Companion format to [DRF](../drf).
 
@@ -36,7 +36,7 @@ CRF models organizational knowledge as a **knowledge graph** where:
 ## Quick Example
 
 ```yaml
-crf_version: "0.1.0"
+crf_version: "0.2.0"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
@@ -205,7 +205,7 @@ supersedes:
 
 ## Provenance
 
-Every entity tracks its origin:
+Every entity tracks its origin. `provenance` is a **required** field, with `source` and `created_at` mandatory:
 
 ```yaml
 provenance:
@@ -245,6 +245,10 @@ See [integration examples](../integration) for details.
 
 - [`organization-acme.yaml`](./examples/organization-acme.yaml) - Organization, team, system, capability
 - [`policy-no-kubernetes.yaml`](./examples/policy-no-kubernetes.yaml) - Policy with related facts
+- [`system-payment-service.yaml`](./examples/system-payment-service.yaml) - Critical system with compliance policy
+- [`capability-ml-engineering.yaml`](./examples/capability-ml-engineering.yaml) - Capability with gap analysis (extension fields)
+
+Each example file stores multiple related entities as a multi-document YAML stream (documents separated by `---`); every document is an independent CRF document that validates against the schema. See [Document Conventions](./spec/crf-specification.md#document-conventions) in the specification.
 
 ---
 

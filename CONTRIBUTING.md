@@ -42,7 +42,8 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 - Use 2-space indentation (no tabs)
 - Quote all string values (e.g., `title: "My Decision"`)
 - Use blank lines to separate top-level sections
-- Include the version field at the top (`drf_version: "0.1.0"` or `crf_version: "0.1.0"`)
+- Include the version field at the top (`drf_version: "0.2.0"` or `crf_version: "0.2.0"`)
+- CRF files may contain multiple entities as a multi-document YAML stream (separated by `---`); each document must carry its own `crf_version` and validate independently
 
 ### IDs
 
@@ -58,17 +59,23 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 
 ### Validating Examples Against Schemas
 
-You can validate your examples against the JSON Schema definitions:
+Use the repository validation script, which validates every example (including multi-document CRF files) against the schemas:
 
 ```bash
-# Using ajv-cli (install with: npm install -g ajv-cli)
-ajv validate -s drf/schema/drf-schema.json -d drf/examples/your-example.yaml
+pip install pyyaml jsonschema
+python3 scripts/validate-examples.py
+```
 
+For a single-document file you can also use a generic validator:
+
+```bash
 # Using check-jsonschema (install with: pip install check-jsonschema)
 check-jsonschema --schemafile drf/schema/drf-schema.json drf/examples/your-example.yaml
 ```
 
-Make sure your example validates cleanly before submitting a PR.
+Note that generic validators reject multi-document YAML streams; use the script for CRF files containing multiple entities.
+
+Make sure your example validates cleanly before submitting a PR. Continuous integration runs the same script on every push and pull request, so invalid examples will fail the build.
 
 ---
 
@@ -112,4 +119,4 @@ If you experience or witness unacceptable behavior, please report it by opening 
 
 ## Questions?
 
-If you are unsure about anything, open a GitHub Issue or start a Discussion. There are no bad questions -- especially at v0.1.0, where everything is still taking shape.
+If you are unsure about anything, open a GitHub Issue or start a Discussion. There are no bad questions -- especially at this early draft stage, where everything is still taking shape.
