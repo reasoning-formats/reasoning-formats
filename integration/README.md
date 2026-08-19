@@ -84,10 +84,10 @@ Decisions can create, update, or invalidate CRF entities:
 # In DRF document
 context_validation:
   context_outputs:
-    - action: creates
-      entity_type: fact
+    - action: "creates"
+      entity_type: "fact"
       entity_data:
-        id: "new-uuid"
+        id: "99999999-9999-4999-8999-999999999999"
         type: fact
         name: "EKS Production Environment"
         attributes:

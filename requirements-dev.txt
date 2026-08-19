@@ -1,0 +1,9 @@
+# Tooling dependencies for validating schemas, examples, and documentation.
+#
+# rfc3339-validator is REQUIRED, not optional: without it the `jsonschema`
+# FormatChecker silently skips every "format": "date-time" assertion, and all
+# timestamps in DRF/CRF documents go unvalidated. scripts/validate-examples.py
+# fails fast if it is missing.
+jsonschema==4.26.0
+PyYAML==6.0.3
+rfc3339-validator==0.1.4

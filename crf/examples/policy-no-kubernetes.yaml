@@ -1,14 +1,14 @@
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
-  type: policy
+  type: "policy"
   name: "Kubernetes Migration Moratorium"
   description: "Temporary policy prohibiting migration to Kubernetes until security audit and team readiness assessment is complete"
 
   attributes:
-    policy_type: architectural
-    enforcement: mandatory
+    policy_type: "architectural"
+    enforcement: "mandatory"
     scope: "All production workloads and new infrastructure deployments"
     rationale: |
       This policy was established following the Q3 2023 security review which identified:
@@ -28,18 +28,26 @@ entity:
 
   validity:
     valid_from: "2023-10-01T00:00:00Z"
+    # Deliberately in the past: this entity is the corpus's worked example of
+    # expired context. The EKS decision below validated against it while it was
+    # still in force, which is why that reference is a WARNING-free 'acknowledged'
+    # rather than a stale-context error. See crf/spec/crf-specification.md,
+    # "Temporal Validity".
     valid_until: "2024-06-30T23:59:59Z"  # Originally Q4 2024, moved up
 
   relationships:
     - target_id: "11111111-1111-1111-1111-111111111111"
-      type: constrains
+      type: "constrains"
       description: "Applies to all ACME Corporation systems"
     - target_id: "33333333-3333-3333-3333-333333333333"
-      type: constrains
+      type: "constrains"
       description: "Specifically constrains production infrastructure changes"
     - target_id: "77777777-7777-7777-7777-777777777777"
-      type: depends_on
+      type: "depends_on"
       description: "Policy depends on security audit completion"
+    - target_id: "88888888-8888-8888-8888-888888888888"
+      type: "related_to"
+      description: "Policy maintains the EC2 standard as the only approved approach"
 
   provenance:
     source: "manual"
@@ -57,16 +65,16 @@ entity:
 
 ---
 # Security Audit Fact (dependency of the policy)
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "77777777-7777-7777-7777-777777777777"
-  type: fact
+  type: "fact"
   name: "Kubernetes Security Audit Status"
   description: "Status of the security audit required before Kubernetes adoption"
 
   attributes:
-    fact_type: status
+    fact_type: "status"
     value:
       status: "in_progress"
       started: "2024-01-15"
@@ -86,7 +94,7 @@ entity:
 
   relationships:
     - target_id: "44444444-4444-4444-4444-444444444444"
-      type: dependency_of
+      type: "dependency_of"
       description: "Policy depends on this audit completion"
 
   provenance:
@@ -104,19 +112,19 @@ entity:
 
 ---
 # Architecture Standard: Current State
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "88888888-8888-8888-8888-888888888888"
-  type: architecture
+  type: "architecture"
   name: "EC2-Based Deployment Standard"
   description: "Current architectural standard for deploying production workloads on EC2 with Auto Scaling Groups"
 
   attributes:
-    architecture_type: standard
-    domain: infrastructure
-    maturity: mature
-    adoption_status: standard
+    architecture_type: "standard"
+    domain: "infrastructure"
+    maturity: "mature"
+    adoption_status: "standard"
     alternatives:
       - "Kubernetes (EKS)"
       - "ECS with Fargate"
@@ -124,10 +132,10 @@ entity:
 
   relationships:
     - target_id: "33333333-3333-3333-3333-333333333333"
-      type: constrains
+      type: "constrains"
       description: "Current standard for production infrastructure"
     - target_id: "44444444-4444-4444-4444-444444444444"
-      type: related_to
+      type: "related_to"
       description: "Policy maintains this as the only approved approach"
 
   provenance:

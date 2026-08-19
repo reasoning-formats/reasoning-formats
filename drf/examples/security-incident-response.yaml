@@ -1,4 +1,4 @@
-drf_version: "0.2.0"
+drf_version: "0.3.0"
 
 decision:
   id: "c7a3e1b0-4d2f-4e8a-9b1c-3f5a7e9d2b40"
@@ -6,6 +6,9 @@ decision:
   domain: "security"
   intent: "Determine the appropriate credential rotation scope and strategy after detecting compromised API keys in a third-party logging service, balancing thoroughness against service disruption risk"
   related_decisions:
+    - id: "f1a2b3c4-5d6e-4f70-8a91-b2c3d4e5f602"
+      relationship: "related_to"
+      description: "Context-aware variant of this decision in integration/examples"
     - id: "c7a3e1b0-4d2f-4e8a-9b1c-3f5a7e9d2b41"
       relationship: "triggers"
       description: "Post-incident review will evaluate secrets management architecture"
@@ -55,10 +58,10 @@ cognitive_state:
 
 reasoning:
   patterns_applied:
-    - risk_based
-    - systematic
-    - deliberative
-    - contrafactual
+    - "risk_based"
+    - "systematic"
+    - "deliberative"
+    - "counterfactual"
   notes: "Risk-based analysis weighed probability of lateral movement against cost of full rotation. Contrafactual reasoning applied: 'If we only rotate targeted credentials and attacker has broader access, exposure window extends by days.' Systematic enumeration of all credential categories and their rotation complexity. Decision favors over-rotation vs under-rotation given regulatory exposure."
 
 interventions:

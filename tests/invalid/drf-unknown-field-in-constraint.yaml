@@ -1,0 +1,20 @@
+# expect: does not match any of the regexes
+drf_version: "0.3.0"
+decision:
+  id: "550e8400-e29b-41d4-a716-446655440000"
+  title: "Fixture decision"
+  intent: "Exercise a single validation rule"
+context:
+  constraints:
+    - description: "A constraint"
+      negotable: true
+  objectives: []
+cognitive_state:
+  phase: "decision"
+  confidence: 50
+synthesis:
+  decision: "Do the thing"
+  rationale: "Because the fixture requires it"
+meta:
+  created_at: "2026-01-01T00:00:00Z"
+  status: "draft"

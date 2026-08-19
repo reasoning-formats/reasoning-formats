@@ -1,6 +1,6 @@
 # DRF — Decision Reasoning Format
 
-**Draft Specification v0.2**
+**Draft Specification v0.3.0**
 
 ---
 
@@ -17,6 +17,28 @@ It is designed to:
 
 > **DRF is not a prompt format.**
 > It is a structured artifact representing a completed (or in-progress) decision process.
+
+---
+
+## Conformance
+
+The key words MUST, MUST NOT, REQUIRED, SHALL, SHOULD, SHOULD NOT, RECOMMENDED,
+MAY, and OPTIONAL in this document and in the companion documents listed under
+[See Also](#see-also) are to be interpreted as described in
+[RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
+
+Normative content is split across three documents, and it is worth being precise
+about which one governs what:
+
+| Document | Governs |
+|----------|---------|
+| [`drf-schema.json`](../schema/drf-schema.json) | The structure of a single document: which fields exist, their types, which are required. A document that fails this schema is not DRF |
+| [`validation-rules.md`](./validation-rules.md) | Semantics the schema cannot express: lifecycle transitions, cross-document references, temporal ordering, uniqueness |
+| This document | Purpose, design rationale, and how DRF relates to adjacent formats |
+
+Where this document and the schema appear to disagree, the schema wins, and the
+disagreement is a bug worth reporting. A per-field reference is maintained in
+the [DRF README](../README.md#field-reference).
 
 ---
 
@@ -48,7 +70,7 @@ A DRF document represents a **decision session**, composed of:
 |-----------|-------------|
 | **Decision Context** | What is being decided, under which constraints and goals |
 | **Cognitive State** | The current phase of reasoning (exploration, analysis, synthesis, decision) |
-| **Reasoning Applied** | Explicit reasoning patterns used (operational, risk-based, contrafactual, etc.) |
+| **Reasoning Applied** | Explicit reasoning patterns used (operational, risk-based, counterfactual, etc.) |
 | **Interventions** | Key questions, challenges, or prompts that shaped the reasoning |
 | **Assumptions** | Explicit or implicit premises accepted during the decision |
 | **Unresolved Tensions** | Known trade-offs or risks left open or accepted |
@@ -59,6 +81,10 @@ A DRF document represents a **decision session**, composed of:
 ## High-Level Structure
 
 ```yaml
+# doc-check: skip
+# A field-name skeleton, not a valid document: every value is intentionally blank.
+drf_version:              # required
+
 decision:
   id:
   title:
@@ -91,18 +117,27 @@ unresolved_tensions:
   - description:
     impact:
 
-synthesis:
+synthesis:                # required once the phase reaches synthesis/decision
   decision:
   rationale:
   follow_ups:
+  alternatives:
+
+context_validation:       # optional; links the decision to CRF entities
+  validated_at:
+  context_refs:
+  context_outputs:
 
 meta:
   created_at:
+  status:
   actors:
   source:
 ```
 
-This structure is illustrative; the [JSON Schema](../schema/drf-schema.json) defines required vs optional fields.
+This structure is illustrative; the [JSON Schema](../schema/drf-schema.json)
+defines required vs optional fields, and the
+[field reference](../README.md#field-reference) documents each one.
 
 ---
 
@@ -123,6 +158,12 @@ This structure is illustrative; the [JSON Schema](../schema/drf-schema.json) def
 - Acting as a chat or conversational format
 - Encoding proprietary business logic
 - Enforcing a single reasoning methodology
+- **Blocking anything.** Validation against organizational context is advisory
+  by design. DRF records that a conflict was found and what was decided about
+  it; it never arbitrates the conflict
+- **Judging decision quality.** A document can be perfectly valid and describe a
+  terrible decision. DRF makes reasoning inspectable so that humans can judge
+  it; it has no opinion of its own
 
 ---
 
@@ -190,7 +231,7 @@ DRF is expected to evolve through:
 
 ## Status
 
-This document represents **DRF Draft v0.2**.
+This document represents **DRF Draft v0.3.0**.
 
 The goal of this phase is to stabilize the core concepts and structure before formal versioning.
 

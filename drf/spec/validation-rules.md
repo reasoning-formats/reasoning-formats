@@ -1,9 +1,31 @@
-# DRF Validation Rules
+# DRF and CRF Validation Rules
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 **Status:** Draft
 
-This document defines the semantic validation rules for DRF documents beyond JSON Schema structural validation.
+This document defines the semantic validation rules for DRF and CRF documents
+beyond JSON Schema structural validation. Sections 1-11 cover DRF; section 12
+covers CRF entities.
+
+## How these rules are enforced
+
+Each rule below is enforced by one of two mechanisms. Neither is optional in
+this repository: both run in CI on every push and pull request.
+
+| Mechanism | What it covers | Command |
+|-----------|----------------|---------|
+| **JSON Schema** | Shape of a single document: required fields, types, enumerations, conditional requirements | `python3 scripts/validate-examples.py` |
+| **Semantic validator** | Everything JSON Schema cannot express: cross-document references, temporal ordering, identifier uniqueness, acyclicity, advisory consistency | `python3 scripts/validate-semantics.py --strict` |
+
+Rules marked **(schema)** below are structural and fail schema validation.
+Rules marked **(semantic)** are checked by `scripts/validate-semantics.py`,
+whose rule identifiers match the `RULE:` names used here. Rules marked
+**(stateful)** cannot be checked from a document corpus at all and require a
+tool that observes documents changing over time.
+
+A third script, `scripts/test-schemas.py`, asserts that the fixtures in
+`tests/invalid/` are *rejected*, so that a schema cannot be loosened by
+accident without failing the build.
 
 ---
 
@@ -37,11 +59,23 @@ The following transitions MUST be rejected:
 ### Validation Rule
 
 ```
-RULE: state_transition_valid
+RULE: state_transition_valid                                       (stateful)
 WHEN: meta.status changes from {old} to {new}
 THEN: transition must exist in valid_transitions map
 ERROR: "Invalid state transition from '{old}' to '{new}'"
 ```
+
+> **A DRF document cannot be checked against this rule on its own.**
+> A document records only its current `meta.status`; it carries no record of
+> the status it held previously. This rule is therefore enforceable only by a
+> system that observes the same `decision.id` over time - a document store, a
+> review workflow, or a git history walk. A validator handed a single file has
+> no way to know which transition, if any, just occurred.
+>
+> Tools that persist DRF documents SHOULD record the prior status alongside the
+> document. A future revision may add an optional `meta.status_history` field
+> so that a single document can carry its own audit trail; that change needs
+> agreement in an issue first (see CONTRIBUTING.md).
 
 ---
 
@@ -80,7 +114,7 @@ RATIONALE: Decisions made with <50% confidence should remain in earlier phases
 **Analytical Patterns:**
 - `operational` - How does this work in practice?
 - `risk_based` - What could go wrong?
-- `contrafactual` - What if we chose differently?
+- `counterfactual` - What if we chose differently?
 - `comparative` - How does this compare to alternatives?
 - `cost_benefit` - What are the trade-offs?
 
@@ -97,6 +131,11 @@ RATIONALE: Decisions made with <50% confidence should remain in earlier phases
 - `delegation` - Deferred to specialist/team
 - `voting` - Majority/weighted vote
 - `escalation` - Elevated to higher authority
+
+> **Deprecated spelling.** Releases up to 0.2.0 spelled `counterfactual` as
+> `contrafactual`. The misspelling remains a valid enumeration value so that
+> existing documents keep validating, and will be removed in 1.0.0. New
+> documents MUST use `counterfactual`.
 
 ### Order Semantics
 
@@ -185,12 +224,29 @@ ADVISORY: High-confidence unvalidated assumptions should be flagged for validati
 
 ## 7. Synthesis Completeness
 
+### When synthesis is required
+
+`synthesis` is not required for every document. A decision still in the
+`exploration` or `analysis` phase legitimately has no outcome yet, and forcing
+one produces placeholder text that is worse than an absent field.
+
+```
+RULE: synthesis_required_when_concluded                            (schema)
+WHEN: cognitive_state.phase is "synthesis" or "decision",
+      OR meta.status is "approved", "rejected", or "superseded"
+THEN: synthesis MUST be present
+ERROR: "'synthesis' is a required property"
+```
+
+See `drf/examples/draft-vector-database-evaluation.yaml` for a document that
+legitimately omits it.
+
 ### Required for Approved Decisions
 
 When `meta.status = "approved"`:
 
 ```
-RULE: approved_synthesis_complete
+RULE: approved_synthesis_complete                                  (semantic)
 REQUIRED: synthesis.decision (non-empty string)
 REQUIRED: synthesis.rationale (non-empty string)
 ADVISORY: synthesis.follow_ups SHOULD have at least one entry
@@ -210,14 +266,26 @@ THEN: order represents ranking (first = highest-ranked alternative)
 ## 8. Temporal Consistency
 
 ```
-RULE: created_before_updated
-WHEN: meta.updated_at is present
-THEN: meta.created_at <= meta.updated_at
+RULE: created_before_updated                                       (semantic)
+WHEN: meta.updated_at is present (DRF), or provenance.updated_at (CRF)
+THEN: created_at <= updated_at
 ERROR: "updated_at cannot be before created_at"
 
-RULE: intervention_timestamps_ordered
+RULE: validity_window_ordered                                      (semantic)
+WHEN: a CRF entity sets both validity.valid_from and validity.valid_until
+THEN: valid_until MUST be later than valid_from
+ERROR: "validity.valid_until is not after valid_from"
+
+RULE: intervention_timestamps_ordered                              (semantic)
 ADVISORY: interventions SHOULD be ordered chronologically by timestamp
 ```
+
+> **Timestamps are only checked when the tooling can check them.**
+> `jsonschema` silently skips every `"format": "date-time"` assertion unless the
+> `rfc3339-validator` package is installed, which turns a passing validation run
+> into a false negative. `scripts/validate-examples.py` refuses to run if that
+> support is missing rather than reporting a success it cannot back up. Install
+> the pinned dependencies with `pip install -r requirements-dev.txt`.
 
 ---
 
@@ -258,12 +326,36 @@ SCOPE: within a DRF repository/system
 THEN: decision.id MUST be globally unique
 ```
 
+```
+RULE: unique_entity_id                                             (semantic)
+SCOPE: within a CRF repository/system
+THEN: entity.id MUST be globally unique
+```
+
+> Two documents describing the same decision - for instance a standalone
+> version and a context-aware version - are still two documents and MUST NOT
+> share an id. Link them with `related_decisions` instead. The pairs in
+> `drf/examples/` and `integration/examples/` demonstrate this.
+
 ### Intervention ID Uniqueness
 
 ```
-RULE: unique_intervention_ids
+RULE: unique_intervention_ids                                      (semantic)
 SCOPE: within a single DRF document
 THEN: interventions[].id MUST be unique within the document
+```
+
+Note that `interventions[].id` is a free-form slug (`int-sec-001`), not a UUID.
+It only has to be unique inside its own document.
+
+### Self-Reference
+
+```
+RULE: no_self_reference                                            (semantic)
+THEN: decision.related_decisions[].id MUST NOT equal decision.id
+      entity.relationships[].target_id MUST NOT equal entity.id
+      entity.supersedes.entity_id MUST NOT equal entity.id
+ERROR: "document references itself"
 ```
 
 ---
@@ -302,55 +394,100 @@ WARNING: "Context type mismatch: declared {declared}, actual {actual}"
 
 | Status | Meaning | Required Fields |
 |--------|---------|-----------------|
-| `satisfied` | Decision complies with context | None additional |
-| `violated` | Decision conflicts with context | `advisory_notes` SHOULD explain |
-| `acknowledged` | Conflict explicitly accepted | `advisory_notes` MUST provide justification |
-| `not_applicable` | Context referenced but not directly relevant | None additional |
+| `satisfied` | Decision complies with this context, or the context is relevant and raises no conflict | None additional |
+| `violated` | Decision conflicts with this context and the conflict is **unresolved** | `advisory_notes` SHOULD explain |
+| `acknowledged` | Decision conflicts with this context and the conflict has been **explicitly accepted** by someone with the authority to accept it | `advisory_notes` MUST provide justification |
+| `not_applicable` | Context referenced for completeness but not materially relevant | None additional |
+
+The line between `violated` and `acknowledged` is *resolution*, not severity. A
+conflict that has been reviewed, justified, and signed off is `acknowledged`
+even if it remains a serious exception. A conflict nobody has ruled on yet is
+`violated`, even if it looks minor.
+
+`satisfied` is also the correct status for context that a decision affects
+without conflicting with - an in-scope system, an owning team. Reaching for
+`acknowledged` there overstates the situation: it claims a conflict was
+accepted when none was found.
 
 ```
-RULE: violated_requires_notes
+RULE: acknowledged_requires_justification                          (schema)
+WHEN: context_validation.context_refs[].validation_status = "acknowledged"
+THEN: advisory_notes MUST be present
+ERROR: "'advisory_notes' is a required property"
+RATIONALE: An acceptance with no recorded justification is not an acceptance
+
+RULE: violated_requires_notes                                      (semantic)
 WHEN: context_validation.context_refs[].validation_status = "violated"
 ADVISORY: advisory_notes SHOULD be populated
 RATIONALE: Violations without explanation reduce audit value
-
-RULE: acknowledged_requires_justification
-WHEN: context_validation.context_refs[].validation_status = "acknowledged"
-ADVISORY: advisory_notes SHOULD contain justification from authorized party
-RATIONALE: Acknowledged violations represent deliberate policy exceptions
 ```
 
 ### Context Output Rules
 
 ```
-RULE: output_creates_requires_data
+RULE: output_creates_requires_data                                 (schema)
 WHEN: context_validation.context_outputs[].action = "creates"
-THEN: entity_data MUST be present with valid CRF entity structure
-ERROR: "Context output 'creates' requires entity_data"
+THEN: entity_data MUST be present, holding a complete CRF entity
+ERROR: "'entity_data' is a required property"
 
-RULE: output_updates_requires_id
+RULE: output_updates_requires_id                                   (schema)
 WHEN: context_validation.context_outputs[].action in ["updates", "invalidates"]
 THEN: entity_id MUST be present
-ERROR: "Context output '{action}' requires entity_id"
+ERROR: "'entity_id' is a required property"
 
-RULE: output_reason_recommended
+RULE: output_invalidates_forbids_data                              (schema)
+WHEN: context_validation.context_outputs[].action = "invalidates"
+THEN: entity_data MUST NOT be present
+ERROR: "'entity_data' should not be valid under the given schema"
+RATIONALE: Invalidation ends an entity's applicability; it carries no new data
+
+RULE: output_target_resolves                                       (semantic)
+WHEN: context_validation.context_outputs[].entity_id is present
+WARNING: the referenced entity SHOULD exist in the context graph
+
+RULE: output_reason_recommended                                    (semantic)
 WHEN: context_validation.context_outputs[] is present
 ADVISORY: reason SHOULD be populated
 RATIONALE: Documenting why decisions affect context improves traceability
 ```
 
+The payload shape differs by action, and the difference matters for
+interoperability. See "Context Output Semantics" in the
+[CRF specification](../../crf/spec/crf-specification.md) for the normative
+definition of what `creates`, `updates`, and `invalidates` do to an entity.
+
 ### Temporal Validation
 
 ```
-RULE: context_temporal_validity
-WHEN: referenced CRF entity has validity.valid_until in the past
-ADVISORY: Context may be expired; consider referencing current context
-WARNING: "Referenced context '{context_name}' expired on {valid_until}"
+RULE: context_temporal_validity                                    (semantic)
+WHEN: a referenced CRF entity has validity.valid_until earlier than the moment
+      the validation was performed (context_validation.validated_at, falling
+      back to meta.updated_at, then meta.created_at)
+WARNING: "Validated against '{context_name}' after it expired on {valid_until}"
+RATIONALE: Validating against context that had already lapsed is an error at
+           the time it was made, and stays an error forever
 
-RULE: validated_at_consistency
+RULE: context_since_expired                                        (semantic)
+WHEN: a referenced CRF entity was valid at validation time but has expired since
+ADVISORY: "'{context_name}' expired on {valid_until}; consider revalidating"
+RATIONALE: The decision was correct when made and does not become retroactively
+           wrong, but the ground it stood on has moved
+
+RULE: validated_at_consistency                                     (semantic)
 WHEN: context_validation.validated_at is present
+WARNING: validated_at MUST NOT precede meta.created_at
 ADVISORY: validated_at SHOULD be recent relative to meta.updated_at
 RATIONALE: Stale context validation may not reflect current organizational state
 ```
+
+> **Expiry is judged as of the validation, not as of today.**
+> A decision made in February 2024 and validated against a policy that ran to
+> June 2024 was validated correctly, and a validator run in 2030 must still say
+> so. Anchoring the check to wall-clock time instead would make every archived
+> decision in the corpus decay into a warning as time passed - a result that
+> tells the reader nothing about the decision's quality, only about the date.
+> `crf/examples/policy-no-kubernetes.yaml` is the corpus's worked example of
+> context that has since expired.
 
 ### Policy Violation Handling
 
@@ -365,10 +502,13 @@ All policy violations are advisory. The recommended workflow:
 4. **Audit** - All violations (including acknowledged) are logged
 
 ```
-RULE: approved_with_violations
+RULE: approved_with_violations                                     (semantic)
 WHEN: meta.status = "approved" AND any context_refs has validation_status = "violated"
-ADVISORY: All violations SHOULD be changed to "acknowledged" before approval
-RATIONALE: Approved decisions with unacknowledged violations indicate process gap
+WARNING: All violations SHOULD be resolved to "satisfied" or accepted as
+         "acknowledged" before approval
+RATIONALE: An approved decision that still carries an unresolved violation means
+           either the conflict was never ruled on, or it was ruled on and the
+           document was not updated to say so. Both are process gaps.
 ```
 
 ---
@@ -392,16 +532,24 @@ NOTE: Enforced structurally by the CRF schema (conditional attribute
 ### Relationship Consistency
 
 ```
-RULE: relationship_target_exists
+RULE: relationship_target_exists                                   (semantic)
 WHEN: entity.relationships[].target_id is specified
-ADVISORY: Target entity SHOULD exist in the context graph
-WARNING: "Relationship target '{target_id}' not found in context"
+WARNING: Target entity SHOULD exist in the context graph
 
-RULE: relationship_inverse_consistency
+RULE: no_self_relationship                                         (semantic)
+WHEN: entity.relationships[].target_id equals entity.id
+ERROR: "entity relates to itself"
+
+RULE: relationship_inverse_consistency                             (semantic)
 WHEN: entity A has relationship R to entity B
-ADVISORY: entity B SHOULD have inverse relationship to A
+ADVISORY: entity B SHOULD have the inverse relationship to A
 RATIONALE: Bidirectional relationships improve graph traversability
 ```
+
+The inverse of each relationship type is fixed; see the table in the
+[CRF specification](../../crf/spec/crf-specification.md#relationship-types).
+Every edge in `crf/examples/` has its inverse recorded, so the reference corpus
+demonstrates the practice it recommends.
 
 ### Supersession Rules
 
@@ -430,8 +578,9 @@ WHEN: entity is created
 THEN: provenance.source and provenance.created_at MUST be present
 ERROR: "Entity missing required provenance fields"
 
-RULE: decision_provenance_format
+RULE: decision_provenance_format                                   (semantic)
 WHEN: provenance.source starts with "decision:"
-THEN: Remainder MUST be valid UUID referencing a DRF decision
+THEN: Remainder MUST be a valid UUID
+WARNING: the referenced DRF decision SHOULD exist in the corpus
 ERROR: "Invalid decision provenance format: {source}"
 ```

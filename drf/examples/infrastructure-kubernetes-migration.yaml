@@ -1,4 +1,4 @@
-drf_version: "0.2.0"
+drf_version: "0.3.0"
 
 decision:
   id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
@@ -6,6 +6,9 @@ decision:
   domain: "infrastructure"
   intent: "Modernize our deployment infrastructure to improve scalability, reduce operational overhead, and enable faster release cycles while maintaining production stability"
   related_decisions:
+    - id: "f1a2b3c4-5d6e-4f70-8a91-b2c3d4e5f601"
+      relationship: "related_to"
+      description: "Context-aware variant of this decision in integration/examples"
     - id: "550e8400-e29b-41d4-a716-446655440000"
       relationship: "depends_on"
       description: "Database decision determines stateful workload requirements for Kubernetes"
@@ -58,11 +61,11 @@ cognitive_state:
 
 reasoning:
   patterns_applied:
-    - risk_based
-    - comparative
-    - cost_benefit
-    - systematic
-    - deliberative
+    - "risk_based"
+    - "comparative"
+    - "cost_benefit"
+    - "systematic"
+    - "deliberative"
   notes: "Primary driver was risk analysis given compliance requirements and zero-downtime constraint. Systematic evaluation of EKS vs ECS vs continued EC2 optimization. Cost-benefit analysis included TCO over 3 years factoring in engineering time, training, and operational efficiency gains."
 
 interventions:

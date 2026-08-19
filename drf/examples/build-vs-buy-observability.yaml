@@ -1,4 +1,4 @@
-drf_version: "0.2.0"
+drf_version: "0.3.0"
 
 decision:
   id: "e5f6a7b8-c9d0-4e1f-b2a3-7c8d9e0f1a23"
@@ -64,10 +64,10 @@ cognitive_state:
 
 reasoning:
   patterns_applied:
-    - comparative
-    - cost_benefit
-    - risk_based
-    - deliberative
+    - "comparative"
+    - "cost_benefit"
+    - "risk_based"
+    - "deliberative"
   notes: "Three-way comparison across 8 dimensions: cost, operational burden, feature completeness, time to value, vendor lock-in risk, scalability, team learning curve, and ecosystem fit. Cost-benefit analysis projected over 24 months. Risk assessment focused on operational burden vs budget trade-off. Build option eliminated early due to team size constraint."
 
 interventions:

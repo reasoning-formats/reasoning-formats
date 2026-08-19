@@ -1,0 +1,18 @@
+# expect: is not a
+drf_version: "0.3.0"
+decision:
+  id: "550e8400-e29b-41d4-a716-446655440000"
+  title: "Fixture decision"
+  intent: "Exercise a single validation rule"
+context:
+  constraints: []
+  objectives: []
+cognitive_state:
+  phase: "decision"
+  confidence: 50
+synthesis:
+  decision: "Do the thing"
+  rationale: "Because the fixture requires it"
+meta:
+  created_at: "not-a-timestamp"
+  status: "draft"

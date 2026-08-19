@@ -1,14 +1,14 @@
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "11111111-1111-1111-1111-111111111111"
-  type: organization
+  type: "organization"
   name: "ACME Corporation"
   description: "Series B SaaS company providing workflow automation for mid-market enterprises"
 
   attributes:
-    org_type: company
-    size: medium
+    org_type: "company"
+    size: "medium"
     headcount: 150
     location: "San Francisco, CA (HQ) + Remote"
     industry: "Enterprise Software / SaaS"
@@ -19,14 +19,29 @@ entity:
 
   relationships:
     - target_id: "22222222-2222-2222-2222-222222222222"
-      type: contains
+      type: "contains"
       description: "Platform Engineering team"
     - target_id: "33333333-3333-3333-3333-333333333333"
-      type: owns
+      type: "owns"
       description: "Primary production infrastructure"
     - target_id: "44444444-4444-4444-4444-444444444444"
-      type: constrained_by
+      type: "constrained_by"
       description: "Company-wide security policies"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1f"
+      type: "constrained_by"
+      description: "PCI DSS compliance policy"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1e"
+      type: "contains"
+      description: "Payments Engineering team"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
+      type: "contains"
+      description: "Data Engineering team"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
+      type: "owns"
+      description: "Payment Processing Service"
+    - target_id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
+      type: "owns"
+      description: "ML/AI Engineering capability"
 
   provenance:
     source: "manual"
@@ -39,28 +54,28 @@ entity:
 
 ---
 # Platform Engineering Team
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "22222222-2222-2222-2222-222222222222"
-  type: organization
+  type: "organization"
   name: "Platform Engineering"
   description: "Team responsible for infrastructure, developer experience, and platform reliability"
 
   attributes:
-    org_type: team
+    org_type: "team"
     headcount: 6
     location: "Remote"
 
   relationships:
     - target_id: "11111111-1111-1111-1111-111111111111"
-      type: part_of
+      type: "part_of"
       description: "Part of ACME Corporation"
     - target_id: "33333333-3333-3333-3333-333333333333"
-      type: owns
+      type: "owns"
       description: "Owns production infrastructure"
     - target_id: "55555555-5555-5555-5555-555555555555"
-      type: owns
+      type: "owns"
       description: "Kubernetes capability"
 
   provenance:
@@ -75,18 +90,18 @@ entity:
 
 ---
 # Production Infrastructure System
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "33333333-3333-3333-3333-333333333333"
-  type: system
+  type: "system"
   name: "Production Infrastructure"
   description: "AWS-based production infrastructure hosting all customer-facing workloads"
 
   attributes:
-    system_type: infrastructure
-    status: production
-    criticality: critical
+    system_type: "infrastructure"
+    status: "production"
+    criticality: "critical"
     technology_stack:
       - "AWS"
       - "EC2"
@@ -95,18 +110,27 @@ entity:
       - "ALB"
       - "CloudFront"
     hosting: "AWS us-east-1"
-    data_classification: confidential
+    data_classification: "confidential"
 
   relationships:
     - target_id: "11111111-1111-1111-1111-111111111111"
-      type: owned_by
+      type: "owned_by"
       description: "Owned by ACME Corporation"
     - target_id: "22222222-2222-2222-2222-222222222222"
-      type: owned_by
+      type: "owned_by"
       description: "Managed by Platform Engineering"
     - target_id: "66666666-6666-6666-6666-666666666666"
-      type: constrained_by
+      type: "constrained_by"
       description: "AWS contract constraints"
+    - target_id: "44444444-4444-4444-4444-444444444444"
+      type: "constrained_by"
+      description: "Kubernetes migration moratorium"
+    - target_id: "88888888-8888-8888-8888-888888888888"
+      type: "constrained_by"
+      description: "EC2-based deployment standard"
+    - target_id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
+      type: "contains"
+      description: "Payment Processing Service is deployed here"
 
   provenance:
     source: "manual"
@@ -122,24 +146,24 @@ entity:
 
 ---
 # Kubernetes Capability
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "55555555-5555-5555-5555-555555555555"
-  type: capability
+  type: "capability"
   name: "Kubernetes Operations"
   description: "Team capability for operating Kubernetes clusters in production"
 
   attributes:
-    capability_type: skill
-    proficiency: intermediate
+    capability_type: "skill"
+    proficiency: "intermediate"
     coverage: 33  # 2 of 6 team members
     training_available: true
-    strategic_importance: high
+    strategic_importance: "high"
 
   relationships:
     - target_id: "22222222-2222-2222-2222-222222222222"
-      type: owned_by
+      type: "owned_by"
       description: "Capability of Platform Engineering team"
 
   provenance:
@@ -154,16 +178,16 @@ entity:
 
 ---
 # AWS Contract Fact
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "66666666-6666-6666-6666-666666666666"
-  type: fact
+  type: "fact"
   name: "AWS Enterprise Contract"
   description: "3-year enterprise agreement with AWS including support and committed spend"
 
   attributes:
-    fact_type: contract
+    fact_type: "contract"
     value:
       vendor: "Amazon Web Services"
       contract_type: "Enterprise Agreement"
@@ -179,11 +203,11 @@ entity:
 
   validity:
     valid_from: "2023-06-01T00:00:00Z"
-    valid_until: "2026-05-31T23:59:59Z"
+    valid_until: "2029-05-31T23:59:59Z"  # Renewed for a second three-year term
 
   relationships:
     - target_id: "33333333-3333-3333-3333-333333333333"
-      type: constrains
+      type: "constrains"
       description: "Contract applies to production infrastructure"
 
   provenance:

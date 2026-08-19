@@ -1,0 +1,14 @@
+# expect: has non-unique elements
+crf_version: "0.3.0"
+entity:
+  id: "44444444-4444-4444-4444-444444444444"
+  type: "policy"
+  name: "Fixture policy"
+  provenance:
+    source: "manual"
+    created_at: "2026-01-01T00:00:00Z"
+  relationships:
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: "constrains"
+    - target_id: "11111111-1111-1111-1111-111111111111"
+      type: "constrains"

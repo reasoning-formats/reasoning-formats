@@ -2,9 +2,10 @@
 
 **Vendor-neutral, machine-readable formats for structured decision documentation and organizational context.**
 
+[![Validate](https://github.com/reasoning-formats/reasoning-formats/actions/workflows/validate.yml/badge.svg)](https://github.com/reasoning-formats/reasoning-formats/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![DRF Version](https://img.shields.io/badge/DRF-v0.2.0-green.svg)](./drf)
-[![CRF Version](https://img.shields.io/badge/CRF-v0.2.0-green.svg)](./crf)
+[![DRF Version](https://img.shields.io/badge/DRF-v0.3.0-green.svg)](./drf)
+[![CRF Version](https://img.shields.io/badge/CRF-v0.3.0-green.svg)](./crf)
 
 ---
 
@@ -14,8 +15,8 @@ This repository contains two complementary specification formats:
 
 | Format | Purpose | Status |
 |--------|---------|--------|
-| **[DRF](./drf)** | Decision Reasoning Format - Captures decisions with explicit reasoning | Draft v0.2.0 |
-| **[CRF](./crf)** | Context Reasoning Format - Models organizational context as a knowledge graph | Draft v0.2.0 |
+| **[DRF](./drf)** | Decision Reasoning Format - Captures decisions with explicit reasoning | Draft v0.3.0 |
+| **[CRF](./crf)** | Context Reasoning Format - Models organizational context as a knowledge graph | Draft v0.3.0 |
 
 Together, they enable **context-aware decision documentation** where decisions can reference and be validated against organizational policies, facts, and constraints.
 
@@ -41,7 +42,7 @@ The answer is usually lost in Slack threads, meeting notes, or someone's memory.
 ### A Simple Decision (DRF)
 
 ```yaml
-drf_version: "0.2.0"
+drf_version: "0.3.0"
 
 decision:
   id: "550e8400-e29b-41d4-a716-446655440000"
@@ -74,7 +75,7 @@ meta:
 ### Organizational Context (CRF)
 
 ```yaml
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
@@ -87,7 +88,7 @@ entity:
     enforcement: mandatory
 
   validity:
-    valid_until: "2024-06-30T23:59:59Z"
+    valid_until: "2024-06-30T23:59:59Z"  # This policy has since lapsed
 
   provenance:
     source: "manual"
@@ -101,9 +102,9 @@ entity:
 context_validation:
   context_refs:
     - context_id: "44444444-4444-4444-4444-444444444444"
-      context_type: policy
+      context_type: "policy"
       context_name: "Kubernetes Migration Moratorium"
-      validation_status: acknowledged  # Decision conflicts but was approved
+      validation_status: "acknowledged"  # Conflict found, reviewed, and accepted
       advisory_notes: "Exception granted by VP Engineering"
 ```
 
@@ -115,7 +116,7 @@ context_validation:
 reasoning-formats/
 ├── drf/                    # Decision Reasoning Format
 │   ├── schema/            # JSON Schema definition
-│   ├── spec/              # Validation rules
+│   ├── spec/              # Specification + DRF/CRF validation rules
 │   └── examples/          # Example decisions
 │
 ├── crf/                    # Context Reasoning Format
@@ -126,16 +127,33 @@ reasoning-formats/
 ├── integration/            # Examples using both formats together
 │   └── examples/
 │
+├── tests/invalid/          # Documents the schemas MUST reject
+│
 └── scripts/                # Validation tooling
-    └── validate-examples.py
+    ├── validate-examples.py    # examples validate against the schemas
+    ├── test-schemas.py         # invalid documents are actually rejected
+    ├── validate-semantics.py   # semantic rules the schemas cannot express
+    └── validate-docs.py        # YAML embedded in this documentation
 ```
 
-All examples are validated against the schemas in CI on every push and pull request. To validate locally:
+### Validating locally
+
+All four checks run in CI on every push and pull request:
 
 ```bash
-pip install pyyaml jsonschema
-python3 scripts/validate-examples.py
+pip install -r requirements-dev.txt
+
+python3 scripts/validate-examples.py      # examples match the schemas
+python3 scripts/test-schemas.py           # invalid documents are rejected
+python3 scripts/validate-semantics.py     # add --strict to fail on warnings
+python3 scripts/validate-docs.py          # YAML in the docs still validates
 ```
+
+> Install from `requirements-dev.txt` rather than `pip install pyyaml jsonschema`.
+> Without the pinned `rfc3339-validator`, `jsonschema` silently skips every
+> `date-time` check and a passing run proves less than it looks like it does.
+> `validate-examples.py` refuses to run rather than report a success it cannot
+> stand behind.
 
 ---
 
@@ -200,7 +218,7 @@ When used together:
 
 ## Status
 
-Both formats are in **Draft v0.2.0** - stabilizing core concepts before formal versioning. See the [CHANGELOG](./CHANGELOG.md) for release history.
+Both formats are in **Draft v0.3.0** - stabilizing core concepts before formal versioning. See the [CHANGELOG](./CHANGELOG.md) for release history.
 
 Feedback and contributions welcome!
 

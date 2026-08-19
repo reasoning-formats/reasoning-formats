@@ -1,0 +1,9 @@
+# expect: is not a
+crf_version: "0.3.0"
+entity:
+  id: "44444444-4444-4444-4444-444444444444"
+  type: "policy"
+  name: "Fixture policy"
+  provenance:
+    source: "manual"
+    created_at: "yesterday"

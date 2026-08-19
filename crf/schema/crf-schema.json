@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.2.0/crf/schema/crf-schema.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.0/crf/schema/crf-schema.json",
   "title": "CRF - Context Reasoning Format",
   "description": "A graph-based format for representing organizational context that informs and constrains decisions. Companion format to DRF (Decision Reasoning Format). A CRF document contains a single entity; multiple entities may be stored in one file as a multi-document YAML stream, where each document validates independently against this schema.",
   "type": "object",
@@ -15,8 +15,8 @@
     "crf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the CRF schema (e.g., '0.2.0')",
-      "examples": ["0.2.0", "1.0.0"]
+      "description": "Semantic version of the CRF schema (e.g., '0.3.0')",
+      "examples": ["0.3.0", "1.0.0"]
     },
 
     "entity": {
@@ -33,7 +33,7 @@
         "id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier (UUID v4)"
+          "description": "Unique identifier (any RFC 4122 UUID; v4 recommended for newly generated ids)"
         },
         "type": {
           "type": "string",
@@ -48,6 +48,7 @@
         },
         "description": {
           "type": "string",
+          "minLength": 1,
           "description": "Detailed description of the entity"
         },
         "attributes": {
@@ -56,7 +57,9 @@
         },
         "validity": {
           "type": "object",
-          "description": "Optional temporal bounds for when this context is valid",
+          "description": "Optional temporal bounds for when this context is valid. When both bounds are present, valid_until MUST be later than valid_from (checked by scripts/validate-semantics.py).",
+          "additionalProperties": false,
+          "patternProperties": { "^x_": { "description": "Extension field" } },
           "properties": {
             "valid_from": {
               "type": "string",
@@ -73,9 +76,12 @@
         "relationships": {
           "type": "array",
           "description": "Edges to other entities in the context graph",
+          "uniqueItems": true,
           "items": {
             "type": "object",
             "required": ["target_id", "type"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "target_id": {
                 "type": "string",
@@ -103,6 +109,7 @@
               },
               "description": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Optional description of the relationship"
               }
             }
@@ -111,6 +118,8 @@
         "supersedes": {
           "type": "object",
           "description": "Reference to entity this one replaces (for evolution tracking)",
+          "additionalProperties": false,
+          "patternProperties": { "^x_": { "description": "Extension field" } },
           "properties": {
             "entity_id": {
               "type": "string",
@@ -133,10 +142,13 @@
           "type": "object",
           "description": "Origin and authorship information",
           "required": ["source", "created_at"],
+          "additionalProperties": false,
+          "patternProperties": { "^x_": { "description": "Extension field" } },
           "properties": {
             "source": {
               "type": "string",
-              "description": "Origin of this context (e.g., 'manual', 'decision:uuid', 'import:system-name')"
+              "minLength": 1,
+              "description": "Origin of this context: 'manual', 'decision:{uuid}', or 'import:{system-name}'. The 'decision:{uuid}' form is checked by scripts/validate-semantics.py."
             },
             "created_at": {
               "type": "string",
@@ -160,8 +172,10 @@
         },
         "tags": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "description": "Categorization tags for discovery and filtering"
         }

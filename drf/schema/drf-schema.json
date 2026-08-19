@@ -1,28 +1,53 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.2.0/drf/schema/drf-schema.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.0/drf/schema/drf-schema.json",
   "title": "DRF - Decision Reasoning Format",
-  "description": "A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning",
+  "description": "A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning. Every object in this schema is closed: unknown fields are rejected unless prefixed with 'x_'.",
   "type": "object",
-  "required": ["drf_version", "decision", "context", "cognitive_state", "synthesis", "meta"],
+  "required": ["drf_version", "decision", "context", "cognitive_state", "meta"],
+  "allOf": [
+    {
+      "description": "A decision that has reached the synthesis or decision phase must record its outcome. Documents still in exploration or analysis legitimately have no synthesis yet.",
+      "if": {
+        "properties": { "cognitive_state": { "properties": { "phase": { "enum": ["synthesis", "decision"] } }, "required": ["phase"] } },
+        "required": ["cognitive_state"]
+      },
+      "then": { "required": ["synthesis"] }
+    },
+    {
+      "description": "A decision that has been approved, rejected, or superseded must record its outcome regardless of phase.",
+      "if": {
+        "properties": { "meta": { "properties": { "status": { "enum": ["approved", "rejected", "superseded"] } }, "required": ["status"] } },
+        "required": ["meta"]
+      },
+      "then": { "required": ["synthesis"] }
+    }
+  ],
   "additionalProperties": false,
+  "patternProperties": {
+    "^x_": {
+      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_audit)"
+    }
+  },
   "properties": {
     "drf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the DRF schema (e.g., '0.2.0')",
-      "examples": ["0.2.0", "1.0.0"]
+      "description": "Semantic version of the DRF schema (e.g., '0.3.0')",
+      "examples": ["0.3.0", "1.0.0"]
     },
 
     "decision": {
       "type": "object",
       "description": "Core identity and intent of the decision",
       "required": ["id", "title", "intent"],
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier (UUID v4)"
+          "description": "Unique identifier (any RFC 4122 UUID; v4 recommended for newly generated ids)"
         },
         "title": {
           "type": "string",
@@ -32,6 +57,7 @@
         },
         "domain": {
           "type": "string",
+          "minLength": 1,
           "description": "Domain or category of the decision (e.g., 'architecture', 'security', 'infrastructure')"
         },
         "intent": {
@@ -45,6 +71,8 @@
           "items": {
             "type": "object",
             "required": ["id", "relationship"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "id": {
                 "type": "string",
@@ -57,6 +85,7 @@
               },
               "description": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Optional description of the relationship"
               }
             }
@@ -69,6 +98,8 @@
       "type": "object",
       "description": "Environmental and situational context for the decision",
       "required": ["constraints", "objectives"],
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "constraints": {
           "type": "array",
@@ -76,12 +107,16 @@
           "items": {
             "type": "object",
             "required": ["description"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "description": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "source": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Origin of the constraint (e.g., 'regulatory', 'budget', 'technical')"
               },
               "negotiable": {
@@ -97,9 +132,12 @@
           "items": {
             "type": "object",
             "required": ["description"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "description": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "priority": {
                 "type": "string",
@@ -115,17 +153,22 @@
         "environment": {
           "type": "object",
           "description": "Relevant environmental factors",
+          "additionalProperties": false,
+          "patternProperties": { "^x_": { "description": "Extension field" } },
           "properties": {
             "technical": {
               "type": "string",
+              "minLength": 1,
               "description": "Technical environment description"
             },
             "organizational": {
               "type": "string",
+              "minLength": 1,
               "description": "Organizational context"
             },
             "temporal": {
               "type": "string",
+              "minLength": 1,
               "description": "Time-related factors (deadlines, urgency)"
             }
           }
@@ -137,6 +180,8 @@
       "type": "object",
       "description": "Current phase and confidence of the decision process",
       "required": ["phase", "confidence"],
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "phase": {
           "type": "string",
@@ -151,6 +196,7 @@
         },
         "phase_notes": {
           "type": "string",
+          "minLength": 1,
           "description": "Optional notes about the current phase"
         }
       }
@@ -159,15 +205,19 @@
     "reasoning": {
       "type": "object",
       "description": "Explicit reasoning patterns applied during the decision",
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "patterns_applied": {
           "type": "array",
           "description": "Ordered list of reasoning patterns (first = primary)",
+          "uniqueItems": true,
           "items": {
             "type": "string",
             "enum": [
               "operational",
               "risk_based",
+              "counterfactual",
               "contrafactual",
               "comparative",
               "cost_benefit",
@@ -181,11 +231,13 @@
               "delegation",
               "voting",
               "escalation"
-            ]
+            ],
+            "description": "'contrafactual' is a deprecated misspelling of 'counterfactual', retained for backward compatibility and scheduled for removal in 1.0.0."
           }
         },
         "notes": {
           "type": "string",
+          "minLength": 1,
           "description": "Additional reasoning notes or methodology description"
         }
       }
@@ -197,10 +249,14 @@
       "items": {
         "type": "object",
         "required": ["id", "type", "content"],
+        "additionalProperties": false,
+        "patternProperties": { "^x_": { "description": "Extension field" } },
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for this intervention"
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            "description": "Identifier for this intervention, unique within the document. Free-form slug (not a UUID)."
           },
           "type": {
             "type": "string",
@@ -209,10 +265,12 @@
           },
           "content": {
             "type": "string",
+            "minLength": 1,
             "description": "The intervention content"
           },
           "source": {
             "type": "string",
+            "minLength": 1,
             "description": "Who or what raised this intervention"
           },
           "timestamp": {
@@ -221,6 +279,7 @@
           },
           "impact": {
             "type": "string",
+            "minLength": 1,
             "description": "How this intervention affected the decision"
           }
         }
@@ -233,9 +292,12 @@
       "items": {
         "type": "object",
         "required": ["description", "validated"],
+        "additionalProperties": false,
+        "patternProperties": { "^x_": { "description": "Extension field" } },
         "properties": {
           "description": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "validated": {
             "type": "boolean",
@@ -249,6 +311,7 @@
           },
           "source": {
             "type": "string",
+            "minLength": 1,
             "description": "Source or basis for this assumption"
           }
         }
@@ -261,9 +324,12 @@
       "items": {
         "type": "object",
         "required": ["description", "impact"],
+        "additionalProperties": false,
+        "patternProperties": { "^x_": { "description": "Extension field" } },
         "properties": {
           "description": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "impact": {
             "type": "string",
@@ -272,10 +338,12 @@
           },
           "mitigation": {
             "type": "string",
+            "minLength": 1,
             "description": "Planned mitigation strategy, if any"
           },
           "accepted_by": {
             "type": "string",
+            "minLength": 1,
             "description": "Who accepted this tension"
           }
         }
@@ -286,13 +354,17 @@
       "type": "object",
       "description": "The consolidated decision outcome",
       "required": ["decision", "rationale"],
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "decision": {
           "type": "string",
+          "minLength": 1,
           "description": "The primary decision statement"
         },
         "rationale": {
           "type": "string",
+          "minLength": 1,
           "description": "Explanation of why this decision was made"
         },
         "follow_ups": {
@@ -301,12 +373,16 @@
           "items": {
             "type": "object",
             "required": ["action"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "action": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "owner": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "due_date": {
                 "type": "string",
@@ -321,17 +397,22 @@
           "items": {
             "type": "object",
             "required": ["decision", "rationale_against"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "decision": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Alternative decision statement"
               },
               "rationale_against": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Why this alternative was not chosen"
               },
               "conditions_for_reconsideration": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Under what conditions this alternative should be reconsidered"
               }
             }
@@ -343,6 +424,8 @@
     "context_validation": {
       "type": "object",
       "description": "Links this decision to CRF (Context Reasoning Format) entities for validation. All validation is advisory - conflicts are surfaced but do not block decisions.",
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "validated_at": {
           "type": "string",
@@ -355,6 +438,8 @@
           "items": {
             "type": "object",
             "required": ["context_id", "context_type", "validation_status"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "context_id": {
                 "type": "string",
@@ -368,6 +453,7 @@
               },
               "context_name": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Human-readable name of the referenced context (for documentation)"
               },
               "validation_status": {
@@ -377,9 +463,22 @@
               },
               "advisory_notes": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Explanation of the validation result or justification for acknowledged violations"
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": { "validation_status": { "const": "acknowledged" } },
+                  "required": ["validation_status"]
+                },
+                "then": {
+                  "required": ["advisory_notes"],
+                  "description": "An acknowledged conflict must carry its justification"
+                }
+              }
+            ]
           }
         },
         "context_outputs": {
@@ -388,6 +487,8 @@
           "items": {
             "type": "object",
             "required": ["action", "entity_type"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "action": {
                 "type": "string",
@@ -402,17 +503,42 @@
               "entity_id": {
                 "type": "string",
                 "format": "uuid",
-                "description": "ID of existing entity (required for updates/invalidates)"
+                "description": "ID of the existing entity (required for 'updates' and 'invalidates')"
               },
               "entity_data": {
                 "type": "object",
-                "description": "Data for the new/updated entity (see CRF schema)"
+                "minProperties": 1,
+                "description": "For 'creates': a complete CRF entity object (everything under 'entity:' in a CRF document, minus crf_version). For 'updates': a partial merge patch - only the fields being changed, merged key-by-key into the existing entity. Not permitted for 'invalidates'. See the CRF specification, section 'Context Output Semantics'."
               },
               "reason": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Why this decision affects the context"
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": { "action": { "const": "creates" } },
+                  "required": ["action"]
+                },
+                "then": { "required": ["entity_data"] }
+              },
+              {
+                "if": {
+                  "properties": { "action": { "enum": ["updates", "invalidates"] } },
+                  "required": ["action"]
+                },
+                "then": { "required": ["entity_id"] }
+              },
+              {
+                "if": {
+                  "properties": { "action": { "const": "invalidates" } },
+                  "required": ["action"]
+                },
+                "then": { "not": { "required": ["entity_data"] } }
+              }
+            ]
           }
         }
       }
@@ -422,6 +548,8 @@
       "type": "object",
       "description": "Metadata about the decision document",
       "required": ["created_at", "status"],
+      "additionalProperties": false,
+      "patternProperties": { "^x_": { "description": "Extension field" } },
       "properties": {
         "created_at": {
           "type": "string",
@@ -444,9 +572,12 @@
           "items": {
             "type": "object",
             "required": ["name", "role"],
+            "additionalProperties": false,
+            "patternProperties": { "^x_": { "description": "Extension field" } },
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "role": {
                 "type": "string",
@@ -461,21 +592,19 @@
         },
         "source": {
           "type": "string",
+          "minLength": 1,
           "description": "Origin of this decision (e.g., 'meeting', 'AI-assisted', 'document')"
         },
         "tags": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "description": "Categorization tags"
         }
       }
-    }
-  },
-  "patternProperties": {
-    "^x_": {
-      "description": "Extension fields must be prefixed with 'x_' (e.g., x_mycompany_audit)"
     }
   }
 }

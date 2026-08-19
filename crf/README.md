@@ -1,6 +1,6 @@
 # CRF - Context Reasoning Format
 
-**Version:** 0.2.0 (Draft)
+**Version:** 0.3.0 (Draft)
 
 A graph-based format for representing organizational context that informs and constrains decisions. Companion format to [DRF](../drf).
 
@@ -36,7 +36,7 @@ CRF models organizational knowledge as a **knowledge graph** where:
 ## Quick Example
 
 ```yaml
-crf_version: "0.2.0"
+crf_version: "0.3.0"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
@@ -53,10 +53,10 @@ entity:
 
   validity:
     valid_from: "2023-10-01T00:00:00Z"
-    valid_until: "2024-06-30T23:59:59Z"
+    valid_until: "2024-06-30T23:59:59Z"  # Has since lapsed - see Temporal Validity
 
   relationships:
-    - target_id: "33333333-..."
+    - target_id: "33333333-3333-3333-3333-333333333333"
       type: constrains
       description: "Applies to production infrastructure"
 
@@ -182,8 +182,11 @@ validity:
   valid_until: "2024-12-31T23:59:59Z"
 ```
 
-- Expired context triggers advisory warnings
 - No bounds = always valid
+- Expiry is judged relative to **when a decision validated against the entity**,
+  not relative to today. Validating against context that had already lapsed is a
+  warning; context that has expired since a decision was made is an advisory to
+  revalidate. See [Temporal Validity](./spec/crf-specification.md#temporal-validity).
 
 ---
 
@@ -193,7 +196,7 @@ Context evolves through replacement, not versioning:
 
 ```yaml
 supersedes:
-  entity_id: "uuid-of-previous-entity"
+  entity_id: "44444444-4444-4444-4444-444444444444"
   reason: "Updated policy based on Q1 review"
   superseded_at: "2024-03-15T10:00:00Z"
 ```
@@ -224,18 +227,24 @@ DRF decisions can:
 2. **Produce new CRF entities** (bidirectional)
 
 ```yaml
+# doc-check: skip
 # In DRF decision
 context_validation:
   context_refs:
-    - context_id: "policy-uuid"
-      validation_status: "violated"
-      advisory_notes: "Exception approved by VP"
+    - context_id: "44444444-4444-4444-4444-444444444444"
+      context_type: "policy"
+      validation_status: "acknowledged"
+      advisory_notes: "Exception approved by VP Engineering"
 
   context_outputs:
     - action: "creates"
       entity_type: "fact"
-      entity_data: { ... }
+      entity_data: { ... }   # a complete CRF entity; see Context Output Semantics
 ```
+
+`context_type` is required alongside `context_id`. The three `context_outputs`
+actions take different payloads - see
+[Context Output Semantics](./spec/crf-specification.md#context-output-semantics).
 
 See [integration examples](../integration) for details.
 

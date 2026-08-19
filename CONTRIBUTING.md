@@ -42,13 +42,24 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 - Use 2-space indentation (no tabs)
 - Quote all string values (e.g., `title: "My Decision"`)
 - Use blank lines to separate top-level sections
-- Include the version field at the top (`drf_version: "0.2.0"` or `crf_version: "0.2.0"`)
+- Include the version field at the top (`drf_version: "0.3.0"` or `crf_version: "0.3.0"`)
 - CRF files may contain multiple entities as a multi-document YAML stream (separated by `---`); each document must carry its own `crf_version` and validate independently
 
 ### IDs
 
-- Use UUID v4 format for all `id` fields (e.g., `"550e8400-e29b-41d4-a716-446655440000"`)
-- Use distinct UUIDs across your example -- do not reuse IDs from existing examples
+- `decision.id`, `entity.id`, and every reference to them (`target_id`,
+  `context_id`, `entity_id`) must be a syntactically valid UUID. Generating v4
+  is recommended for anything real, but the schema accepts any RFC 4122 UUID,
+  and the examples use readable patterned IDs such as
+  `"44444444-4444-4444-4444-444444444444"` on purpose -- they are far easier to
+  follow across files than random hex
+- `interventions[].id` is **not** a UUID. It is a free-form slug
+  (`"int-sec-001"`) that only has to be unique within its own document
+- Use distinct IDs across your example -- do not reuse IDs from existing
+  examples. `decision.id` and `entity.id` must be unique across the whole
+  repository, and `scripts/validate-semantics.py` fails the build if they are
+  not. Two documents describing the same decision are still two documents: link
+  them with `related_decisions` rather than giving them the same ID
 
 ### Content
 
@@ -57,14 +68,53 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 - Add YAML comments (`#`) sparingly to explain non-obvious choices
 - Name files descriptively using kebab-case (e.g., `api-gateway-selection.yaml`)
 
-### Validating Examples Against Schemas
+### Timestamps
 
-Use the repository validation script, which validates every example (including multi-document CRF files) against the schemas:
+- All timestamps are RFC 3339 (`"2026-01-15T09:00:00Z"`). `due_date` is a plain
+  date (`"2026-01-15"`)
+- Do not anchor an example's correctness to the current date. Whether context
+  counts as expired is judged against the moment a decision validated against
+  it, never against today, precisely so that examples do not decay into
+  warnings as time passes
+
+### Validating Your Changes
+
+Install the pinned tooling first:
 
 ```bash
-pip install pyyaml jsonschema
-python3 scripts/validate-examples.py
+pip install -r requirements-dev.txt
 ```
+
+> Do not `pip install pyyaml jsonschema` by hand. Without `rfc3339-validator`,
+> `jsonschema` silently skips every `date-time` format check, and a run that
+> reports success has not actually validated a single timestamp.
+> `validate-examples.py` exits rather than report a success it cannot back up.
+
+Then run the same four checks CI runs:
+
+```bash
+python3 scripts/validate-examples.py       # examples match the schemas
+python3 scripts/test-schemas.py            # tests/invalid/ is still rejected
+python3 scripts/validate-semantics.py --strict   # cross-document semantic rules
+python3 scripts/validate-docs.py           # YAML inside Markdown still validates
+```
+
+`validate-semantics.py` reports three severities. `ERROR` always fails.
+`WARNING` fails under `--strict`, which is what CI uses. `ADVISORY` is
+informational -- use `--quiet` to hide it while you work.
+
+**If you change a schema, add a rejection fixture.** `tests/invalid/` holds
+documents that MUST fail validation, each declaring the message it expects on
+its first line:
+
+```yaml
+# expect: 'provenance' is a required property
+```
+
+Without a fixture, a future change that accidentally loosens the schema will
+pass CI unnoticed. This is not optional for schema PRs.
+
+### Using a generic validator
 
 For a single-document file you can also use a generic validator:
 
@@ -105,7 +155,11 @@ Sign off on your commits by adding a `Signed-off-by` line:
 Signed-off-by: Your Name <your.email@example.com>
 ```
 
-You can do this automatically with `git commit -s`.
+You can do this automatically with `git commit -s`, or retroactively across a
+branch with `git rebase --signoff main`.
+
+CI enforces this: the `DCO sign-off` job fails a pull request if any commit in
+it lacks the trailer.
 
 ---
 

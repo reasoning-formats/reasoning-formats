@@ -1,4 +1,4 @@
-drf_version: "0.2.0"
+drf_version: "0.3.0"
 
 decision:
   id: "d4e5f6a7-b8c9-4d0e-a1f2-6b3c7d8e9f01"
@@ -58,10 +58,10 @@ cognitive_state:
 
 reasoning:
   patterns_applied:
-    - comparative
-    - deliberative
-    - risk_based
-    - cost_benefit
+    - "comparative"
+    - "deliberative"
+    - "risk_based"
+    - "cost_benefit"
   notes: "Systematic comparison of three versioning approaches (URL path, Accept header, query parameter) against six criteria: developer experience, cacheability, discoverability, tooling support, operational complexity, and industry alignment. Weighted scoring model developed with input from partner survey. Risk analysis focused on migration complexity and partner adoption friction."
 
 interventions:

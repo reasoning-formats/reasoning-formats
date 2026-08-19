@@ -1,0 +1,10 @@
+# expect: does not match any of the regexes
+crf_version: "0.3.0"
+entity:
+  id: "44444444-4444-4444-4444-444444444444"
+  type: "policy"
+  name: "Fixture policy"
+  nam: "typo"
+  provenance:
+    source: "manual"
+    created_at: "2026-01-01T00:00:00Z"

@@ -1,0 +1,128 @@
+# An in-progress decision.
+#
+# Every other example in this directory is a finished, approved decision. This
+# one is deliberately unfinished: it sits in the "exploration" phase, carries
+# low confidence, has unvalidated assumptions and open tensions, and records no
+# synthesis at all. DRF supports prospective use, not just retrospective
+# documentation, and this file is what that actually looks like on disk.
+drf_version: "0.3.0"
+
+decision:
+  id: "3f9c8d21-7b4e-4a06-9c15-8e2d7a1b4c33"
+  title: "Select a Vector Store for Semantic Product Search"
+  domain: "architecture"
+  intent: "Choose the storage layer for embedding-based product search, before committing engineering time to an integration that is expensive to reverse"
+  related_decisions:
+    - id: "550e8400-e29b-41d4-a716-446655440000"
+      relationship: "depends_on"
+      description: "Whatever we choose must coexist with the primary PostgreSQL database"
+
+context:
+  constraints:
+    - description: "Must run inside the existing AWS VPC; no new third-party data processors before legal review"
+      source: "regulatory"
+      negotiable: false
+    - description: "Incremental infrastructure spend capped at $2,000/month for the pilot"
+      source: "budget"
+      negotiable: true
+    - description: "Product catalogue is 4.1M items and grows roughly 3% monthly"
+      source: "technical"
+      negotiable: false
+  objectives:
+    - description: "p95 query latency under 150ms at 50 queries/second"
+      priority: "must_have"
+      measurable: true
+    - description: "Recall@10 of at least 0.90 against the hand-labelled evaluation set"
+      priority: "must_have"
+      measurable: true
+    - description: "Operable by the existing platform team without a dedicated specialist"
+      priority: "should_have"
+      measurable: false
+    - description: "Supports metadata filtering in the same query as the vector search"
+      priority: "nice_to_have"
+      measurable: true
+  environment:
+    technical: "PostgreSQL 15 on RDS, Python services on ECS Fargate. No existing vector workload. Embeddings currently generated ad hoc in notebooks."
+    organizational: "Platform team of 6, none with production vector database experience. Search is owned by a two-person product squad."
+    temporal: "No hard deadline. Product wants a pilot in front of users during Q4; that date is a preference, not a commitment."
+
+cognitive_state:
+  phase: "exploration"
+  confidence: 35
+  phase_notes: |
+    Still gathering evidence. Three candidates identified (pgvector, OpenSearch
+    k-NN, a managed vector service) but none has been benchmarked against our
+    own catalogue. Confidence is deliberately low: the recall numbers that would
+    discriminate between the options do not exist yet.
+
+reasoning:
+  patterns_applied:
+    - "comparative"
+    - "operational"
+  notes: |
+    Comparative evaluation is the primary frame, but the operational lens is
+    doing more work than expected: the team's lack of vector experience may
+    matter more than raw benchmark differences between the candidates.
+
+interventions:
+  - id: "int-vec-001"
+    type: "question"
+    content: "Do we actually need a separate vector store, or does pgvector on the existing RDS instance clear the latency bar?"
+    source: "Platform Lead"
+    timestamp: "2026-07-14T10:30:00Z"
+    impact: "Reframed the evaluation: 'no new system' became the baseline to beat rather than one option among three"
+  - id: "int-vec-002"
+    type: "challenge"
+    content: "The 0.90 recall target was copied from a vendor benchmark, not derived from our own quality bar. What recall do users actually notice?"
+    source: "Search Product Manager"
+    timestamp: "2026-07-21T15:00:00Z"
+    impact: "Objective flagged as unvalidated; a user study is now a prerequisite for the analysis phase"
+  - id: "int-vec-003"
+    type: "external_input"
+    content: "Legal advises that any managed vector service outside the VPC requires a DPA and a 6-8 week review"
+    source: "Legal Counsel"
+    timestamp: "2026-08-03T09:15:00Z"
+    impact: "Effectively removes managed third-party services from the Q4 pilot window"
+
+assumptions:
+  - description: "Embedding dimensionality will stay at 768; no move to a larger model during the pilot"
+    validated: false
+    confidence: 60
+    source: "Current model choice, not yet confirmed with the ML team"
+  - description: "pgvector's HNSW index can hold 4.1M vectors within the current RDS instance's memory headroom"
+    validated: false
+    confidence: 40
+    source: "Extrapolated from public benchmarks; not tested on our data"
+  - description: "Query volume will not exceed 50 QPS during the pilot"
+    validated: true
+    confidence: 85
+    source: "Current search traffic measured over the last 90 days"
+
+unresolved_tensions:
+  - description: "The recall target is unvalidated, so the benchmark that would decide this cannot yet be scored"
+    impact: "high"
+    mitigation: "User study scheduled before the analysis phase begins"
+  - description: "Keeping vectors in PostgreSQL couples search scaling to the primary database's scaling"
+    impact: "medium"
+    mitigation: "None yet; needs load testing against the production instance size"
+  - description: "The team has no operational experience with any candidate, so the operability objective is being judged on speculation"
+    impact: "medium"
+
+meta:
+  created_at: "2026-07-14T09:00:00Z"
+  updated_at: "2026-08-03T11:00:00Z"
+  status: "draft"
+  actors:
+    - name: "Rafael Ortega"
+      role: "author"
+      email: "rafael.ortega@acme.com"
+    - name: "Search Product Squad"
+      role: "stakeholder"
+    - name: "Platform Lead"
+      role: "contributor"
+  source: "architecture_working_group"
+  tags:
+    - "architecture"
+    - "search"
+    - "in-progress"
+    - "vector-database"
