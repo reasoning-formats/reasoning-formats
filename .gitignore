@@ -4,3 +4,7 @@ CLAUDE.md
 .claude/
 .DS_Store
 launch/
+
+# Python
+__pycache__/
+*.pyc
