@@ -36,4 +36,4 @@ Paste the full YAML below. See [CONTRIBUTING.md](../../CONTRIBUTING.md#example-g
 
 - [ ] I have validated this example against the relevant JSON Schema
 - [ ] IDs use UUID v4 format
-- [ ] The file is named using kebab-case (e.g., `api-gateway-selection.yaml`)
+- [ ] The file is named using kebab-case with the format suffix (e.g., `api-gateway-selection.drf.yaml`)

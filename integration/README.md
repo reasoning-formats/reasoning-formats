@@ -184,7 +184,7 @@ Decisions don't just consume context - they **produce** it. Every significant de
 
 ### Full Integration Examples
 
-[`infrastructure-eks-with-context.yaml`](./examples/infrastructure-eks-with-context.yaml)
+[`infrastructure-eks-with-context.drf.yaml`](./examples/infrastructure-eks-with-context.drf.yaml)
 
 A complete example showing:
 - A Kubernetes migration decision
@@ -192,7 +192,7 @@ A complete example showing:
 - An acknowledged policy violation with justification
 - Context outputs that create new organizational facts
 
-[`security-credential-rotation-with-context.yaml`](./examples/security-credential-rotation-with-context.yaml)
+[`security-credential-rotation-with-context.drf.yaml`](./examples/security-credential-rotation-with-context.drf.yaml)
 
 A time-critical security decision showing:
 - Credential rotation after an API key compromise

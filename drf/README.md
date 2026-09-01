@@ -319,12 +319,12 @@ See [integration examples](../integration) for details.
 
 ## Examples
 
-- [`draft-vector-database-evaluation.yaml`](./examples/draft-vector-database-evaluation.yaml) - An **in-progress** decision: exploration phase, low confidence, no synthesis yet
-- [`database-selection.yaml`](./examples/database-selection.yaml) - Simple database decision
-- [`api-versioning-strategy.yaml`](./examples/api-versioning-strategy.yaml) - API versioning strategy decision
-- [`build-vs-buy-observability.yaml`](./examples/build-vs-buy-observability.yaml) - Build-vs-buy evaluation
-- [`infrastructure-kubernetes-migration.yaml`](./examples/infrastructure-kubernetes-migration.yaml) - Complex infrastructure decision
-- [`security-incident-response.yaml`](./examples/security-incident-response.yaml) - Time-critical security decision
+- [`draft-vector-database-evaluation.drf.yaml`](./examples/draft-vector-database-evaluation.drf.yaml) - An **in-progress** decision: exploration phase, low confidence, no synthesis yet
+- [`database-selection.drf.yaml`](./examples/database-selection.drf.yaml) - Simple database decision
+- [`api-versioning-strategy.drf.yaml`](./examples/api-versioning-strategy.drf.yaml) - API versioning strategy decision
+- [`build-vs-buy-observability.drf.yaml`](./examples/build-vs-buy-observability.drf.yaml) - Build-vs-buy evaluation
+- [`infrastructure-kubernetes-migration.drf.yaml`](./examples/infrastructure-kubernetes-migration.drf.yaml) - Complex infrastructure decision
+- [`security-incident-response.drf.yaml`](./examples/security-incident-response.drf.yaml) - Time-critical security decision
 
 ---
 

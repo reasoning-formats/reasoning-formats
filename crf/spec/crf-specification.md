@@ -87,6 +87,15 @@ schema would reject.
 
 Each document in the stream MUST validate independently against the CRF schema, including its own `crf_version` field. Validators MUST process every document in a stream, not just the first. The repository's [`scripts/validate-examples.py`](../../scripts/validate-examples.py) implements this behavior.
 
+### File Naming
+
+A CRF file SHOULD be named `<descriptive-name>.crf.yaml` (or `.crf.yml` /
+`.crf.json`). As with DRF, this is a RECOMMENDATION rather than a conformance
+requirement — it exists so editors and language servers can apply the schema
+from the filename alone and offer completion and inline validation. A file that
+holds a multi-document stream follows the same convention; the suffix describes
+the file, not the individual documents inside it.
+
 ### Extension Fields
 
 Fields not defined by this specification MUST use the `x_` prefix (e.g., `x_mycompany_sla`). This applies at the document root, within `entity`, and within `attributes`. Unprefixed unknown fields are rejected by the schema.
@@ -271,7 +280,7 @@ validity:
   advisory to revalidate (`context_since_expired`), not an error. The decision
   was sound when made; the ground under it has moved.
 
-`crf/examples/policy-no-kubernetes.yaml` is the worked example: its moratorium
+`crf/examples/policy-no-kubernetes.crf.yaml` is the worked example: its moratorium
 has genuinely lapsed, and the EKS decision that validated against it while it
 was in force is still reported clean.
 

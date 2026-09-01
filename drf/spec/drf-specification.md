@@ -141,6 +141,24 @@ defines required vs optional fields, and the
 
 ---
 
+## File Naming
+
+A DRF document SHOULD be stored in a file named `<descriptive-name>.drf.yaml`
+(or `.drf.yml` / `.drf.json`). The descriptive part is free-form; the
+`.drf` infix is what identifies the file as a DRF document without parsing it.
+
+This is a RECOMMENDATION, not a conformance requirement. A document that
+validates against the schema is a valid DRF document whatever its filename, and
+no validator rejects a file for being named otherwise.
+
+The reason to follow it is tooling. Editors and language servers decide which
+schema to apply from the filename, so a distinctive suffix is what makes
+field-name completion, enum suggestions, and inline validation work while the
+document is being written. A generic `*.yaml` pattern cannot be used for this,
+because it would claim every YAML file in the project.
+
+---
+
 ## Intended Use Cases
 
 - Technical architecture decisions
