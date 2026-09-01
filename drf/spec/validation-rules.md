@@ -238,7 +238,7 @@ THEN: synthesis MUST be present
 ERROR: "'synthesis' is a required property"
 ```
 
-See `drf/examples/draft-vector-database-evaluation.yaml` for a document that
+See `drf/examples/draft-vector-database-evaluation.drf.yaml` for a document that
 legitimately omits it.
 
 ### Required for Approved Decisions
@@ -486,7 +486,7 @@ RATIONALE: Stale context validation may not reflect current organizational state
 > so. Anchoring the check to wall-clock time instead would make every archived
 > decision in the corpus decay into a warning as time passed - a result that
 > tells the reader nothing about the decision's quality, only about the date.
-> `crf/examples/policy-no-kubernetes.yaml` is the corpus's worked example of
+> `crf/examples/policy-no-kubernetes.crf.yaml` is the corpus's worked example of
 > context that has since expired.
 
 ### Policy Violation Handling

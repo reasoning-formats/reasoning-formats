@@ -66,7 +66,10 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 - Use realistic but fictional scenarios (no real company data unless you have permission)
 - Include enough detail to be useful -- minimal examples belong in the README, not in `examples/`
 - Add YAML comments (`#`) sparingly to explain non-obvious choices
-- Name files descriptively using kebab-case (e.g., `api-gateway-selection.yaml`)
+- Name files descriptively using kebab-case, with the format suffix that
+  identifies the document type: `api-gateway-selection.drf.yaml` for a DRF
+  decision, `policy-data-residency.crf.yaml` for CRF entities. The suffix is
+  what lets editors apply the right schema and offer completion as you type
 
 ### Timestamps
 
@@ -120,7 +123,7 @@ For a single-document file you can also use a generic validator:
 
 ```bash
 # Using check-jsonschema (install with: pip install check-jsonschema)
-check-jsonschema --schemafile drf/schema/drf-schema.json drf/examples/your-example.yaml
+check-jsonschema --schemafile drf/schema/drf-schema.json drf/examples/your-example.drf.yaml
 ```
 
 Note that generic validators reject multi-document YAML streams; use the script for CRF files containing multiple entities.

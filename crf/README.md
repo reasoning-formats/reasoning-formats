@@ -252,10 +252,10 @@ See [integration examples](../integration) for details.
 
 ## Examples
 
-- [`organization-acme.yaml`](./examples/organization-acme.yaml) - Organization, team, system, capability
-- [`policy-no-kubernetes.yaml`](./examples/policy-no-kubernetes.yaml) - Policy with related facts
-- [`system-payment-service.yaml`](./examples/system-payment-service.yaml) - Critical system with compliance policy
-- [`capability-ml-engineering.yaml`](./examples/capability-ml-engineering.yaml) - Capability with gap analysis (extension fields)
+- [`organization-acme.crf.yaml`](./examples/organization-acme.crf.yaml) - Organization, team, system, capability
+- [`policy-no-kubernetes.crf.yaml`](./examples/policy-no-kubernetes.crf.yaml) - Policy with related facts
+- [`system-payment-service.crf.yaml`](./examples/system-payment-service.crf.yaml) - Critical system with compliance policy
+- [`capability-ml-engineering.crf.yaml`](./examples/capability-ml-engineering.crf.yaml) - Capability with gap analysis (extension fields)
 
 Each example file stores multiple related entities as a multi-document YAML stream (documents separated by `---`); every document is an independent CRF document that validates against the schema. See [Document Conventions](./spec/crf-specification.md#document-conventions) in the specification.
 

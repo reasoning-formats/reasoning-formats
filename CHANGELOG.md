@@ -5,6 +5,27 @@ All notable changes to the DRF and CRF specifications are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and both specifications adhere to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **File naming convention (both formats)**: DRF documents SHOULD be named
+  `<name>.drf.yaml`, CRF documents `<name>.crf.yaml`. Documented in both
+  specifications, `CONTRIBUTING.md`, and the new-example issue template. This is
+  a RECOMMENDATION, not a conformance rule - no validator rejects a differently
+  named file - and exists so editors and language servers can apply the right
+  schema from the filename and offer completion and inline validation while a
+  document is being written. A generic `*.yaml` pattern cannot serve that
+  purpose because it would claim every YAML file in a project. See #3.
+
+### Changed
+
+- The repository's 12 example files were renamed to follow the convention
+  (`database-selection.yaml` becomes `database-selection.drf.yaml`, and so on),
+  and every reference to them in the specifications and READMEs was updated.
+  Document content is unchanged, and the validation scripts glob directories
+  rather than fixed names, so tooling was unaffected.
+
 ## [0.3.0] - 2026-08-19
 
 This release makes the repository enforce what it already documented. Every
