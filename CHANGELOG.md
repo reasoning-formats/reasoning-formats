@@ -9,6 +9,13 @@ and both specifications adhere to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Editor support**: both schemas are now registered in
+  [SchemaStore](https://www.schemastore.org) (catalog entries `Decision Reasoning
+  Format (DRF)` and `Context Reasoning Format (CRF)`), so a file named
+  `*.drf.yaml` or `*.crf.yaml` gets field completion and inline validation in VS
+  Code, IntelliJ, and any editor using the RedHat YAML language server, with
+  nothing to install. Documented in the README. The catalog references the
+  schemas at their `main` URLs rather than holding a copy.
 - **File naming convention (both formats)**: DRF documents SHOULD be named
   `<name>.drf.yaml`, CRF documents `<name>.crf.yaml`. Documented in both
   specifications, `CONTRIBUTING.md`, and the new-example issue template. This is

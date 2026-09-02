@@ -108,6 +108,20 @@ context_validation:
       advisory_notes: "Exception granted by VP Engineering"
 ```
 
+### Editor Support
+
+Name the file `<something>.drf.yaml` or `<something>.crf.yaml` and your editor
+does the rest -- field completion, enum suggestions, and validation errors
+underlined as you type, with nothing to install or configure.
+
+Both schemas are registered in [SchemaStore](https://www.schemastore.org), the
+catalog that VS Code, IntelliJ, and the RedHat YAML language server consult to
+decide which schema applies to which file. The `.drf` / `.crf` infix is what
+they match on, which is why it is the [recommended file
+naming](./drf/spec/drf-specification.md#file-naming) convention. It is only a
+recommendation: a document with any other name still validates, it just does not
+get picked up automatically.
+
 ---
 
 ## Repository Structure
