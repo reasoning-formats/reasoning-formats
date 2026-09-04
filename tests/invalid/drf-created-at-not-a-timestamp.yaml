@@ -1,5 +1,5 @@
 # expect: is not a
-drf_version: "0.3.0"
+drf_version: "0.3.1"
 decision:
   id: "550e8400-e29b-41d4-a716-446655440000"
   title: "Fixture decision"

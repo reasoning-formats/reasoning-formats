@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.0/crf/schema/crf-schema.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.1/crf/schema/crf-schema.json",
   "title": "CRF - Context Reasoning Format",
   "description": "A graph-based format for representing organizational context that informs and constrains decisions. Companion format to DRF (Decision Reasoning Format). A CRF document contains a single entity; multiple entities may be stored in one file as a multi-document YAML stream, where each document validates independently against this schema.",
   "type": "object",
@@ -15,8 +15,8 @@
     "crf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the CRF schema (e.g., '0.3.0')",
-      "examples": ["0.3.0", "1.0.0"]
+      "description": "Semantic version of the CRF schema (e.g., '0.3.1')",
+      "examples": ["0.3.1", "1.0.0"]
     },
 
     "entity": {
@@ -314,6 +314,11 @@
         "hosting": {
           "type": "string",
           "description": "Where the system is hosted (AWS, GCP, on-prem, etc.)"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "description": "License the system is distributed under: an SPDX identifier where one exists ('Apache-2.0', 'LGPL-3.0-only', 'CeCILL-C'), or 'proprietary' for software with no public license. Belongs here rather than in technology_stack, which lists technologies."
         },
         "data_classification": {
           "type": "string",

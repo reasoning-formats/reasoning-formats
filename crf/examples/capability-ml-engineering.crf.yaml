@@ -1,4 +1,4 @@
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2e"
@@ -89,7 +89,7 @@ entity:
 
 ---
 # Data Engineering Team
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d2f"
@@ -125,7 +125,7 @@ entity:
 
 ---
 # Data Platform System (dependency)
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "b2c2d2e2-f2a2-4b2c-9d2e-2f2a2b2c2d30"

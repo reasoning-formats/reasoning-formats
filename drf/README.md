@@ -1,6 +1,6 @@
 # DRF - Decision Reasoning Format
 
-**Version:** 0.3.0 (Draft)
+**Version:** 0.3.1 (Draft)
 
 A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning.
 
@@ -30,7 +30,7 @@ DRF is a structured format for documenting **decisions** along with their **reas
 ## Quick Example
 
 ```yaml
-drf_version: "0.3.0"
+drf_version: "0.3.1"
 
 decision:
   id: "550e8400-e29b-41d4-a716-446655440000"
@@ -192,7 +192,7 @@ does not begin with `x_` is rejected. `R` marks a required field.
 | Field | | Type | Notes |
 |-------|---|------|-------|
 | `constraints[]` | R | list | Each entry needs `description` |
-| `constraints[].source` | | string | Where the constraint comes from, e.g. `regulatory`, `budget`, `technical` |
+| `constraints[].source` | | string | Where the constraint comes from, e.g. `regulatory`, `budget`, `technical`. An open vocabulary, not an enum — see [Constraint Sources](./spec/drf-specification.md#constraint-sources) for the recommended values |
 | `constraints[].negotiable` | | boolean | Defaults to `false` |
 | `objectives[]` | R | list | Each entry needs `description` |
 | `objectives[].priority` | | enum | `must_have`, `should_have`, `nice_to_have` |
@@ -261,6 +261,7 @@ Required once `cognitive_state.phase` reaches `synthesis` or `decision`, or once
 | `rationale` | R | string | Why this outcome |
 | `follow_ups[]` | | list | Each needs `action`; optional `owner`, `due_date` (a date, not a date-time) |
 | `alternatives[]` | | list | Each needs `decision` + `rationale_against`; optional `conditions_for_reconsideration`. Ordered: first is the highest-ranked alternative |
+| `alternatives[].retracted_by` | | string | Id of the intervention that withdrew this position, marking it as one actually held and then abandoned rather than merely evaluated. Must resolve within the same document — see [Retracted Positions](./spec/drf-specification.md#retracted-positions) |
 
 #### `context_validation`
 

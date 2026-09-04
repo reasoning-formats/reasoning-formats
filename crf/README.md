@@ -1,6 +1,6 @@
 # CRF - Context Reasoning Format
 
-**Version:** 0.3.0 (Draft)
+**Version:** 0.3.1 (Draft)
 
 A graph-based format for representing organizational context that informs and constrains decisions. Companion format to [DRF](../drf).
 
@@ -36,7 +36,7 @@ CRF models organizational knowledge as a **knowledge graph** where:
 ## Quick Example
 
 ```yaml
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
@@ -99,6 +99,7 @@ attributes:
   status: production       # planned, development, staging, production
   criticality: critical    # low, medium, high, critical
   technology_stack: ["AWS", "Kubernetes", "PostgreSQL"]
+  license: Apache-2.0      # SPDX identifier, or "proprietary"
   data_classification: confidential
 ```
 
@@ -212,7 +213,7 @@ Every entity tracks its origin. `provenance` is a **required** field, with `sour
 
 ```yaml
 provenance:
-  source: "manual"              # or "decision:uuid", "import:cmdb"
+  source: "manual"              # or "decision:uuid", "import:cmdb", or a URI
   created_at: "2024-01-15T09:00:00Z"
   created_by: "alice@example.com"
 ```

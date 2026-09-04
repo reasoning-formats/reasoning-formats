@@ -1,4 +1,4 @@
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
@@ -65,7 +65,7 @@ entity:
 
 ---
 # Security Audit Fact (dependency of the policy)
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "77777777-7777-7777-7777-777777777777"
@@ -112,7 +112,7 @@ entity:
 
 ---
 # Architecture Standard: Current State
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "88888888-8888-8888-8888-888888888888"

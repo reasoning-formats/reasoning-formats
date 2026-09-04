@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.0/drf/schema/drf-schema.json",
+  "$id": "https://raw.githubusercontent.com/reasoning-formats/reasoning-formats/v0.3.1/drf/schema/drf-schema.json",
   "title": "DRF - Decision Reasoning Format",
   "description": "A vendor-neutral, machine-readable format for representing technical and strategic decisions with explicit reasoning. Every object in this schema is closed: unknown fields are rejected unless prefixed with 'x_'.",
   "type": "object",
@@ -33,8 +33,8 @@
     "drf_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the DRF schema (e.g., '0.3.0')",
-      "examples": ["0.3.0", "1.0.0"]
+      "description": "Semantic version of the DRF schema (e.g., '0.3.1')",
+      "examples": ["0.3.1", "1.0.0"]
     },
 
     "decision": {
@@ -414,6 +414,12 @@
                 "type": "string",
                 "minLength": 1,
                 "description": "Under what conditions this alternative should be reconsidered"
+              },
+              "retracted_by": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                "description": "Id of the intervention (interventions[].id) that withdrew this position. Its presence marks the entry as a position actually held during this decision and then abandoned, which is not the same as an option merely evaluated. Resolved against the interventions of the same document by scripts/validate-semantics.py."
               }
             }
           }

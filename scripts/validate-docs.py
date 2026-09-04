@@ -12,7 +12,10 @@ caught here:
 2. Placeholder identifiers. Fragments cannot be schema-validated on their own,
    but a fragment that writes `context_id: "uuid-of-policy"` is still teaching
    readers something the schema rejects. Every `id`-shaped key in every fenced
-   YAML block must carry a real UUID.
+   YAML block must carry a real UUID - except the two identifiers these formats
+   define as slugs rather than UUIDs, `interventions[].id` and the
+   `retracted_by` that references one, which must match the schema's slug
+   pattern instead.
 
 A block may opt out of both checks with a `# doc-check: skip` comment on its
 first line - use that only for deliberately abbreviated illustrations.
@@ -35,6 +38,15 @@ FENCE = re.compile(r"^```ya?ml[^\n]*\n(.*?)^```", re.S | re.M)
 ID_KEYS = {"id", "context_id", "target_id", "entity_id"}
 SKIP = "# doc-check: skip"
 
+# Not every identifier in these formats is a UUID. `interventions[].id` is a
+# free-form slug unique only within its document, and `retracted_by` points at
+# one of those slugs, so both are checked against the schema's slug pattern
+# instead. Checking them as UUIDs would make a realistic intervention
+# impossible to write in prose.
+SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+SLUG_ID_PARENTS = {"interventions"}
+SLUG_KEYS = {"retracted_by"}
+
 
 def iter_markdown():
     for path in sorted(REPO_ROOT.rglob("*.md")):
@@ -43,21 +55,32 @@ def iter_markdown():
         yield path
 
 
-def bad_ids(node, path=""):
-    """Yield (json_pointer, value) for id-shaped keys that are not UUIDs."""
+def bad_ids(node, path="", parent=""):
+    """Yield (json_pointer, value, expected) for malformed identifiers.
+
+    `parent` is the key of the enclosing collection, which is what tells an
+    intervention slug apart from a UUID-bearing `id` elsewhere.
+    """
     if isinstance(node, dict):
         for key, value in node.items():
             here = f"{path}/{key}"
             if key in ID_KEYS and isinstance(value, str):
-                try:
-                    uuid.UUID(value)
-                except ValueError:
-                    yield here, value
+                if parent in SLUG_ID_PARENTS:
+                    if not SLUG.match(value):
+                        yield here, value, "an intervention slug"
+                else:
+                    try:
+                        uuid.UUID(value)
+                    except ValueError:
+                        yield here, value, "a UUID"
+            elif key in SLUG_KEYS and isinstance(value, str):
+                if not SLUG.match(value):
+                    yield here, value, "an intervention slug"
             elif not str(key).startswith("x_"):
-                yield from bad_ids(value, here)
+                yield from bad_ids(value, here, key)
     elif isinstance(node, list):
         for i, item in enumerate(node):
-            yield from bad_ids(item, f"{path}[{i}]")
+            yield from bad_ids(item, f"{path}[{i}]", parent)
 
 
 def main() -> int:
@@ -83,10 +106,10 @@ def main() -> int:
                 continue
 
             for doc in docs:
-                for pointer, value in bad_ids(doc):
+                for pointer, value, expected in bad_ids(doc):
                     print(
                         f"FAIL  {rel}:{line}: placeholder at {pointer or '<root>'} "
-                        f"is not a UUID: {value!r}"
+                        f"is not {expected}: {value!r}"
                     )
                     errors += 1
 

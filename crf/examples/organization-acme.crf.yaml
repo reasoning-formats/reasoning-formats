@@ -1,4 +1,4 @@
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "11111111-1111-1111-1111-111111111111"
@@ -54,7 +54,7 @@ entity:
 
 ---
 # Platform Engineering Team
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "22222222-2222-2222-2222-222222222222"
@@ -90,7 +90,7 @@ entity:
 
 ---
 # Production Infrastructure System
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "33333333-3333-3333-3333-333333333333"
@@ -146,7 +146,7 @@ entity:
 
 ---
 # Kubernetes Capability
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "55555555-5555-5555-5555-555555555555"
@@ -178,7 +178,7 @@ entity:
 
 ---
 # AWS Contract Fact
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "66666666-6666-6666-6666-666666666666"

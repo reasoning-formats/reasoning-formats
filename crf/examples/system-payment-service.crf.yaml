@@ -1,4 +1,4 @@
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1d"
@@ -19,6 +19,7 @@ entity:
       - "AWS KMS"
     hosting: "AWS us-east-1 (primary), us-west-2 (failover)"
     data_classification: "restricted"
+    license: "proprietary"
     x_sla:
       availability: "99.99%"
       rto_minutes: 15
@@ -73,7 +74,7 @@ entity:
 
 ---
 # Payments Engineering Team
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1e"
@@ -108,7 +109,7 @@ entity:
 
 ---
 # PCI DSS Compliance Policy
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "a1b1c1d1-e1f1-4a1b-8c1d-1e1f1a1b1c1f"

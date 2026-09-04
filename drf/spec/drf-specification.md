@@ -1,6 +1,6 @@
 # DRF — Decision Reasoning Format
 
-**Draft Specification v0.3.0**
+**Draft Specification v0.3.1**
 
 ---
 
@@ -141,6 +141,81 @@ defines required vs optional fields, and the
 
 ---
 
+## Retracted Positions
+
+An entry in `synthesis.alternatives[]` normally records an option that was
+evaluated and not chosen. Some entries are different in kind: they are
+positions the author actually held during the session and then abandoned when
+something in the reasoning defeated them. That is not the same epistemic event,
+and conflating the two loses the most informative part of the record.
+
+DRF distinguishes them with `retracted_by`, which names the intervention that
+withdrew the position:
+
+```yaml
+interventions:
+  - id: "int-obs-002"
+    type: "challenge"
+    content: "Self-hosted means we become our own observability vendor. With 2 platform engineers, who observes the observers?"
+    source: "VP Engineering"
+    impact: "Shifted preference from self-hosted to managed; operational risk too high for team size"
+
+synthesis:
+  alternatives:
+    - decision: "Self-host the observability stack"
+      rationale_against: "A 2-person team cannot sustain the operational burden."
+      retracted_by: "int-obs-002"
+```
+
+Rules:
+
+- `retracted_by` MUST be the `id` of an intervention in the **same** document.
+  Retraction across documents is supersession, and belongs in
+  `decision.related_decisions` with `supersedes` / `superseded_by`.
+- Its presence is what marks the entry as a position once held. An alternative
+  without it makes no claim either way.
+- Who held the position is not repeated here: it follows from the
+  `source` and `impact` of the referenced intervention.
+
+The dangling-reference check is `retracted_by_resolves` in the
+[validation rules](./validation-rules.md).
+
+---
+
+## Constraint Sources
+
+`context.constraints[].source` is deliberately an **open string**, not an
+enumeration. The examples in this repository use `technical`, `regulatory`,
+`business`, and `budget` consistently, and that consistency is a convention of
+the examples rather than a rule of the format.
+
+The following vocabulary is RECOMMENDED, and is a registry rather than a
+constraint - a document that uses other values is fully conformant:
+
+| Value | Origin of the constraint |
+|-------|--------------------------|
+| `technical` | Properties of the systems or technologies involved |
+| `regulatory` | Law, regulation, or a compliance regime |
+| `legal` | Contracts, licensing, intellectual property |
+| `budget` | Money available |
+| `business` | Commercial strategy or commitments |
+| `organizational` | Team size, skills, structure, capacity |
+| `temporal` | Deadlines and sequencing |
+| `security` | Threat model or security posture |
+| `physical` | Laws of nature, or an irreducible property of the domain |
+| `evidence` | The state of what is known or measurable |
+
+Two reasons the field stays open. Constraints in a scientific, regulatory, or
+industrial domain do not decompose into a fixed set - a snow-modelling decision
+constrained by atmospheric predictability is not usefully filed under
+`technical`. And an enumeration would fix the vocabulary in English, while the
+rest of a document's prose is written in whatever language its authors work in.
+
+Tooling SHOULD treat unknown values as valid, and MAY report a document whose
+constraint sources are inconsistent with each other.
+
+---
+
 ## File Naming
 
 A DRF document SHOULD be stored in a file named `<descriptive-name>.drf.yaml`
@@ -249,7 +324,7 @@ DRF is expected to evolve through:
 
 ## Status
 
-This document represents **DRF Draft v0.3.0**.
+This document represents **DRF Draft v0.3.1**.
 
 The goal of this phase is to stabilize the core concepts and structure before formal versioning.
 

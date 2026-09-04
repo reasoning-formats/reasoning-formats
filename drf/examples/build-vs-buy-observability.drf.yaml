@@ -1,4 +1,4 @@
-drf_version: "0.3.0"
+drf_version: "0.3.1"
 
 decision:
   id: "e5f6a7b8-c9d0-4e1f-b2a3-7c8d9e0f1a23"
@@ -173,6 +173,7 @@ synthesis:
     - decision: "Build custom observability platform using self-hosted Prometheus, Loki, and Jaeger"
       rationale_against: "A 2-person platform team cannot sustain the operational burden of managing a production observability stack. Self-hosted infrastructure estimated at $3,200/month (cheapest option) but requires 40-50% of platform team capacity for operations, leaving insufficient time for other platform work."
       conditions_for_reconsideration: "If platform team grows to 4+ engineers and team has experience operating these systems in production"
+      retracted_by: "int-obs-002"
     - decision: "Extend current CloudWatch-based monitoring with additional AWS-native tools"
       rationale_against: "CloudWatch lacks unified metrics/logs/traces correlation, has poor dashboard UX, and creates deep AWS vendor lock-in. Does not address the root cause of recent outages (slow detection due to fragmented monitoring)."
       conditions_for_reconsideration: "Not recommended under any foreseeable conditions"

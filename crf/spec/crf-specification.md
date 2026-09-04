@@ -1,6 +1,6 @@
 # CRF - Context Reasoning Format
 
-**Version:** 0.3.0
+**Version:** 0.3.1
 **Status:** Draft
 **Companion to:** DRF (Decision Reasoning Format)
 
@@ -61,7 +61,7 @@ A CRF document contains exactly one `entity`. This keeps each document independe
 Related entities MAY be stored in a single file as a **multi-document YAML stream**, with documents separated by `---`:
 
 ```yaml
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 entity:
   id: "11111111-1111-1111-1111-111111111111"
   type: "organization"
@@ -70,7 +70,7 @@ entity:
     source: "manual"
     created_at: "2024-01-01T00:00:00Z"
 ---
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 entity:
   id: "22222222-2222-2222-2222-222222222222"
   type: "organization"
@@ -134,8 +134,19 @@ attributes:
   criticality: low | medium | high | critical
   technology_stack: [string]
   hosting: string
+  license: string (SPDX identifier, or "proprietary")
   data_classification: public | internal | confidential | restricted
 ```
+
+`license` records the terms the system is distributed under: an SPDX identifier
+where one exists (`Apache-2.0`, `LGPL-3.0-only`, `CeCILL-C`), or `proprietary`
+for software with no public license. It belongs here rather than inside
+`technology_stack`, which lists technologies - a license buried in that array
+corrupts a field consumers use to match on technology.
+
+Licensing is frequently what a decision actually turns on, particularly for
+third-party software an organization depends on but does not own, so it is a
+first-class attribute rather than something to be inferred from tags or prose.
 
 **Use cases:**
 - Document the technical landscape
@@ -310,7 +321,7 @@ Every entity tracks its origin. The `provenance` field is **required** on every 
 
 ```yaml
 provenance:
-  source: "manual"              # or "decision:uuid" or "import:system-name"
+  source: "manual"              # or "decision:uuid", "import:system-name", or a URI
   created_at: "2024-01-15T09:00:00Z"
   created_by: "alice@example.com"
   updated_at: "2024-02-20T14:30:00Z"
@@ -321,6 +332,21 @@ provenance:
 - `manual` - Human-authored
 - `decision:{uuid}` - Created by a DRF decision (via context_outputs)
 - `import:{system}` - Imported from external system (CMDB, etc.)
+- an absolute URI - the published document, dataset, or page the entity was
+  read from, e.g. `https://essd.copernicus.org/articles/14/1707/2022/`
+
+The first three forms are structured and tooling interprets them:
+`decision:{uuid}` is resolved against the corpus by
+`scripts/validate-semantics.py`. The URI form exists because an entity
+describing something outside the organization usually has a citation rather
+than an owner, and recording that citation in `source` is more useful than
+flattening it to `manual`.
+
+`source` is an open string, so these four forms are a registry rather than an
+enumeration; a value outside them is conformant. Records that need more than a
+single reference - several sources for one fact - belong in the entity's
+`description` or an `x_` field until a future version addresses plurality
+across every `source` field in both formats.
 
 ---
 

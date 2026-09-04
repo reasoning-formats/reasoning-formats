@@ -42,6 +42,12 @@ INVERSE = {
     "related_to": "related_to",
 }
 
+# Section 2: how far cognitive_state.confidence may sit above the least
+# confident assumption before the gap is worth pointing out. A decision is not
+# more solid than the premise it rests on, and a document-level number cannot
+# show that on its own.
+CONFIDENCE_GAP_THRESHOLD = 30
+
 DECISION_SOURCE = re.compile(r"^decision:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$")
 
 
@@ -305,6 +311,16 @@ def check_advisories(rep, drf):
             rep.add(ADVISORY, "confidence_phase_consistency", where,
                     f"phase is 'decision' but confidence is {state['confidence']} (< 50)")
 
+        scored = [a for a in doc.get("assumptions", []) if a.get("confidence") is not None]
+        if scored:
+            weakest = min(scored, key=lambda a: a["confidence"])
+            gap = state["confidence"] - weakest["confidence"]
+            if gap > CONFIDENCE_GAP_THRESHOLD:
+                rep.add(ADVISORY, "confidence_rests_on_weakest_assumption", where,
+                        f"confidence is {state['confidence']} but rests on an assumption at "
+                        f"{weakest['confidence']} (gap {gap} > {CONFIDENCE_GAP_THRESHOLD}): "
+                        f"{weakest['description'][:60]}")
+
         for assumption in doc.get("assumptions", []):
             confidence = assumption.get("confidence")
             if confidence is None:
@@ -331,6 +347,24 @@ def check_advisories(rep, drf):
             if not synthesis.get("alternatives"):
                 rep.add(ADVISORY, "approved_synthesis_complete", where,
                         "approved decision records no alternatives")
+
+
+def check_retractions(rep, drf):
+    """RULE: retracted_by_resolves (section 7).
+
+    An alternative carrying `retracted_by` claims that a specific intervention
+    in this same document withdrew it. A dangling id makes that claim
+    unfollowable, which defeats the point of recording it as a field rather
+    than as prose.
+    """
+    for where, doc in drf:
+        known = {item["id"] for item in doc.get("interventions", [])}
+        for alt in (doc.get("synthesis") or {}).get("alternatives", []):
+            retracted_by = alt.get("retracted_by")
+            if retracted_by and retracted_by not in known:
+                rep.add(ERROR, "retracted_by_resolves", where,
+                        f"alternative {alt['decision'][:40]!r} is retracted_by "
+                        f"{retracted_by!r}, which is not an intervention in this document")
 
 
 def find_cycles(graph):
@@ -373,6 +407,7 @@ def main() -> int:
     check_decision_graph(rep, drf)
     check_entity_graph(rep, crf, drf)
     check_advisories(rep, drf)
+    check_retractions(rep, drf)
 
     order = {ERROR: 0, WARNING: 1, ADVISORY: 2}
     for severity, rule, where, message in sorted(rep.findings, key=lambda f: (order[f[0]], f[1], f[2])):

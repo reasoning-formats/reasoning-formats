@@ -1,6 +1,6 @@
 # DRF and CRF Validation Rules
 
-**Version:** 0.3.0
+**Version:** 0.3.1
 **Status:** Draft
 
 This document defines the semantic validation rules for DRF and CRF documents
@@ -104,6 +104,30 @@ WHEN: cognitive_state.phase = "decision"
 ADVISORY: cognitive_state.confidence SHOULD be >= 50
 RATIONALE: Decisions made with <50% confidence should remain in earlier phases
 ```
+
+### The Weakest Assumption
+
+`cognitive_state.confidence` is one number for a whole decision, so it cannot
+show that the decision rests on a premise far weaker than itself. A document at
+confidence 85 whose load-bearing assumption sits at 30 reads as solid to anyone
+- human or agent - who looks only at `cognitive_state`.
+
+```
+RULE: confidence_rests_on_weakest_assumption                       (semantic)
+WHEN: assumptions[] contains at least one entry with a confidence
+ADVISORY: cognitive_state.confidence - min(assumptions[].confidence) SHOULD be <= 30
+RATIONALE: A decision is not more solid than the premise it rests on
+```
+
+The threshold is a heuristic and the check is deliberately advisory, because
+confidence alone does not say whether an assumption is load-bearing: a decision
+can be robust to a weak premise it does not depend on. The gap may also be
+negative, which is not a finding - an assumption more confident than the
+decision around it is unremarkable.
+
+Tooling MUST NOT derive a field from this comparison. A stored
+`weakest_assumption_confidence` would go stale the moment an assumption is
+edited; validators compute the gap when they run.
 
 ---
 
@@ -260,6 +284,25 @@ RULE: alternatives_ranked
 WHEN: synthesis.alternatives contains multiple entries
 THEN: order represents ranking (first = highest-ranked alternative)
 ```
+
+### Retracted Positions
+
+An alternative carrying `retracted_by` claims that a named intervention in the
+same document withdrew a position that was actually held. A dangling reference
+makes that claim unfollowable, which defeats the purpose of recording it as a
+field rather than as prose.
+
+```
+RULE: retracted_by_resolves                                        (semantic)
+WHEN: synthesis.alternatives[].retracted_by is present
+THEN: it MUST equal the id of an intervention in the same document
+ERROR: "retracted_by ... is not an intervention in this document"
+```
+
+Retraction is scoped to one document by design. A position abandoned across
+documents is supersession, and belongs in `decision.related_decisions` with
+`supersedes` / `superseded_by` (section 5). See
+`drf/examples/build-vs-buy-observability.drf.yaml` for the field in use.
 
 ---
 

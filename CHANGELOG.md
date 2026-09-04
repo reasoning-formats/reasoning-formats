@@ -7,7 +7,68 @@ and both specifications adhere to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-04
+
+Driven by the first use of these formats outside the case they were designed
+for: eight DRF decisions and twenty CRF entities documenting a snow-modelling
+project, where most of the context is institutions and software the author does
+not own. Everything validated, so none of this fixes a bug - it addresses
+friction the canonical "a company documenting its own systems" corpus never
+exposed.
+
+Two additive optional fields ship in a patch release rather than a minor one, at
+the maintainer's decision. Consumers pinning `~0.3.0` will therefore see fields
+that did not exist in 0.3.0; no document valid under 0.3.0 becomes invalid.
+
+This release also ships the editor support and the file-naming convention that
+had been merged but unreleased since 0.3.0.
+
 ### Added
+
+- **`synthesis.alternatives[].retracted_by` (DRF)**: the id of the intervention
+  that withdrew this position. An `alternatives[]` entry normally records an
+  option that was evaluated; this field marks one that was actually *held*
+  during the session and then abandoned, which is a different epistemic event.
+  Both halves were already recordable - the challenge in `interventions[]`, the
+  discarded option in `alternatives[]` - but only prose could join them, so a
+  reader could not tell a rejected option from a retracted commitment. Who held
+  the position needs no new field: it follows from the referenced
+  intervention's `source`. Retraction is scoped to a single document by design;
+  across documents that is supersession. New rule `retracted_by_resolves`
+  (ERROR) rejects a dangling id. Documented in the DRF specification
+  ("Retracted Positions") and section 7 of the validation rules; in use in
+  `drf/examples/build-vs-buy-observability.drf.yaml`.
+- **`attributes.license` on CRF `system` entities**: an SPDX identifier, or
+  `proprietary`. Licensing is often what a decision actually turns on,
+  especially for third-party software an organization depends on but does not
+  own. Without the field, licenses were being recorded inside
+  `technology_stack` - which corrupts a field consumers use to match on
+  technology - and duplicated into tags and separate `fact` entities.
+- **`confidence_rests_on_weakest_assumption` (advisory)**: reports when
+  `cognitive_state.confidence` exceeds the least confident assumption by more
+  than 30 points. A document-level confidence cannot show that a decision rests
+  on a premise far weaker than itself, so a reader who looks only at
+  `cognitive_state` gets an impression of solidity the document does not
+  support. Deliberately advisory: confidence alone does not say whether an
+  assumption is load-bearing. Negative gaps are not findings. No field stores
+  this - a stored value would go stale as soon as an assumption was edited.
+  It currently fires once on this repository's own corpus
+  (`database-selection.drf.yaml`, confidence 85 over an assumption at 50), which
+  is left in place as a live example rather than tuned away.
+- **Recommended vocabulary for `context.constraints[].source`**: ten values
+  documented as a registry in the DRF specification. The field stays an open
+  string. The four values the examples had used consistently read as a de facto
+  enum and invited invention; eleven mutually inconsistent values appeared
+  across eight external documents. It is not enumerated because constraints in
+  scientific, regulatory, or industrial domains do not decompose into a fixed
+  set, and because an enum would fix the vocabulary in English while the rest of
+  a document is written in its authors' language - the format has no value-level
+  escape convention, `x_` being for field names.
+- **An absolute URI as a fourth `provenance.source` form (CRF)**: an entity
+  describing something outside the organization usually has a citation rather
+  than an owner. The specification documented three forms; the first external
+  corpus used URLs throughout and the schema accepted them silently, so the
+  convention is now written down as the registry it actually is.
 
 - **Editor support**: both schemas are now registered in
   [SchemaStore](https://www.schemastore.org) (catalog entries `Decision Reasoning
@@ -27,6 +88,11 @@ and both specifications adhere to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- `scripts/validate-docs.py` now checks `interventions[].id` and `retracted_by`
+  against the schema's slug pattern instead of requiring a UUID. Every
+  `id`-shaped key had to be a UUID, which made it impossible to show a
+  realistic intervention in documentation - the reason no snippet in the
+  repository had ever shown one.
 - The repository's 12 example files were renamed to follow the convention
   (`database-selection.yaml` becomes `database-selection.drf.yaml`, and so on),
   and every reference to them in the specifications and READMEs was updated.
@@ -185,6 +251,7 @@ and the places where the examples contradicted their own rules have been fixed.
 - Integration examples showing DRF and CRF used together.
 - Contributing guidelines and issue templates.
 
+[0.3.1]: https://github.com/reasoning-formats/reasoning-formats/releases/tag/v0.3.1
 [0.3.0]: https://github.com/reasoning-formats/reasoning-formats/releases/tag/v0.3.0
 [0.2.0]: https://github.com/reasoning-formats/reasoning-formats/releases/tag/v0.2.0
 [0.1.0]: https://github.com/reasoning-formats/reasoning-formats/commit/4bb238d

@@ -42,7 +42,7 @@ Examples live in `drf/examples/`, `crf/examples/`, and `integration/examples/`. 
 - Use 2-space indentation (no tabs)
 - Quote all string values (e.g., `title: "My Decision"`)
 - Use blank lines to separate top-level sections
-- Include the version field at the top (`drf_version: "0.3.0"` or `crf_version: "0.3.0"`)
+- Include the version field at the top (`drf_version: "0.3.1"` or `crf_version: "0.3.1"`)
 - CRF files may contain multiple entities as a multi-document YAML stream (separated by `---`); each document must carry its own `crf_version` and validate independently
 
 ### IDs

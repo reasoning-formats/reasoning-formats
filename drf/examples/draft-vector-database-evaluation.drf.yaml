@@ -5,7 +5,7 @@
 # low confidence, has unvalidated assumptions and open tensions, and records no
 # synthesis at all. DRF supports prospective use, not just retrospective
 # documentation, and this file is what that actually looks like on disk.
-drf_version: "0.3.0"
+drf_version: "0.3.1"
 
 decision:
   id: "3f9c8d21-7b4e-4a06-9c15-8e2d7a1b4c33"

@@ -4,8 +4,8 @@
 
 [![Validate](https://github.com/reasoning-formats/reasoning-formats/actions/workflows/validate.yml/badge.svg)](https://github.com/reasoning-formats/reasoning-formats/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![DRF Version](https://img.shields.io/badge/DRF-v0.3.0-green.svg)](./drf)
-[![CRF Version](https://img.shields.io/badge/CRF-v0.3.0-green.svg)](./crf)
+[![DRF Version](https://img.shields.io/badge/DRF-v0.3.1-green.svg)](./drf)
+[![CRF Version](https://img.shields.io/badge/CRF-v0.3.1-green.svg)](./crf)
 
 ---
 
@@ -15,8 +15,8 @@ This repository contains two complementary specification formats:
 
 | Format | Purpose | Status |
 |--------|---------|--------|
-| **[DRF](./drf)** | Decision Reasoning Format - Captures decisions with explicit reasoning | Draft v0.3.0 |
-| **[CRF](./crf)** | Context Reasoning Format - Models organizational context as a knowledge graph | Draft v0.3.0 |
+| **[DRF](./drf)** | Decision Reasoning Format - Captures decisions with explicit reasoning | Draft v0.3.1 |
+| **[CRF](./crf)** | Context Reasoning Format - Models organizational context as a knowledge graph | Draft v0.3.1 |
 
 Together, they enable **context-aware decision documentation** where decisions can reference and be validated against organizational policies, facts, and constraints.
 
@@ -42,7 +42,7 @@ The answer is usually lost in Slack threads, meeting notes, or someone's memory.
 ### A Simple Decision (DRF)
 
 ```yaml
-drf_version: "0.3.0"
+drf_version: "0.3.1"
 
 decision:
   id: "550e8400-e29b-41d4-a716-446655440000"
@@ -75,7 +75,7 @@ meta:
 ### Organizational Context (CRF)
 
 ```yaml
-crf_version: "0.3.0"
+crf_version: "0.3.1"
 
 entity:
   id: "44444444-4444-4444-4444-444444444444"
