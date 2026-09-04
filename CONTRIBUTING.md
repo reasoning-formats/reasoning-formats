@@ -31,6 +31,11 @@ Spec changes follow a two-step process:
 
 This avoids wasted effort on changes that may not align with the project direction.
 
+Before opening one, check [DESIGN-NOTES.md](./DESIGN-NOTES.md). It records
+proposals that were considered and declined, with the reasoning and with what
+would reopen each - so a settled question is not re-argued, and so "no" can be
+told apart from "not yet".
+
 ---
 
 ## Example Guidelines

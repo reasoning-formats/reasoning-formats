@@ -7,6 +7,17 @@ and both specifications adhere to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`DESIGN-NOTES.md`**: proposals that were considered and declined, each with
+  the reasoning and with what would reopen it. Records the two items deferred
+  out of the 0.3.1 feedback round - an ownership axis on CRF entities, which
+  waits on whether CRF is a fixed core or gains domain profiles, and plural
+  `source` fields, which should be done in one pass across both formats - and
+  the five rejected outright. Linked from `CONTRIBUTING.md` ahead of the
+  spec-change process, so a settled question is not re-argued and "no" can be
+  told apart from "not yet".
+
 ## [0.3.1] - 2026-09-04
 
 Driven by the first use of these formats outside the case they were designed

@@ -143,6 +143,8 @@ reasoning-formats/
 │
 ├── tests/invalid/          # Documents the schemas MUST reject
 │
+├── DESIGN-NOTES.md         # Proposals considered and declined, and why
+│
 └── scripts/                # Validation tooling
     ├── validate-examples.py    # examples validate against the schemas
     ├── test-schemas.py         # invalid documents are actually rejected
